@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node cli --dev",
-    "web": "budo web/wallet.js:bundle.js --open --live --ssl",
+    "web": "budo web/wallet.js:bundle.js --open --live",
     "build": "browserify --full-paths web/wallet.js > bundle.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

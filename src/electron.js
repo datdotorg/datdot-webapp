@@ -1,7 +1,7 @@
 const electron = require('electron')
 const path = require('path')
-
-const { app, Menu, Tray, BrowserWindow, screen, session } = electron
+const fs = require('fs')
+const { app, Menu, Tray, BrowserWindow, screen, session, ipcMain } = electron
 
 const iconPath = path.join(__dirname, 'assets/IconTemplate.png')
 const state_ok_20_png = path.join(__dirname, 'assets/state-ok-20.png')
@@ -11,15 +11,18 @@ const state_sync_20_120_png = path.join(__dirname, 'assets/state-sync-20-120.png
 
 const args = process.argv.slice(2)
 const secret = ''
-const wallet = (args[0] === '--dev') ?
-  `https://localhost:9966/#${secret}`
-  : `file://${process.cwd()}/index.html#${secret}`
+const folder = fs.readdirSync(process.cwd())
+const wallet = (args[0] === '-- ') ? `file://${process.cwd()}/index.html#${secret}` : `http://localhost:9966/#${secret}`
+
+// Don't show the app in the doc (Mac)
+// app.dock.hide()
 
 var tray = app.whenReady().then(start)
 
 function start () {
   tray = new Tray(iconPath)
 
+  // createTray()
   // @NOTE https://www.electronjs.org/docs/api/menu-item
   const template = [
     // {
@@ -66,8 +69,21 @@ function start () {
       click() { app.quit() },
     },
   ]
-  const contextMenu = Menu.buildFromTemplate(template)
-  tray.setContextMenu(contextMenu)
+  // const contextMenu = Menu.buildFromTemplate(template)
+  // tray.setContextMenu(contextMenu)
+  createTray()
+
+  function createTray() {
+    tray.on('right-click', toggleWindow)
+    tray.on('double-click', toggleWindow)
+    tray.on('click', function (event) {
+      toggleWindow()
+      // Show devtools when command clicked
+      if (mainWindow.isVisible() && process.defaultApp && event.metaKey) {
+        mainWindow.openDevTools({mode: 'detach'})
+      }
+    })
+  }
 
   setOkIcon()
   const trayAnimation = setInterval(frame, 1000);
@@ -162,11 +178,11 @@ function start () {
   // const trayBounds = tray.getBounds();
   const bounds = tray.getBounds()
   const xy = screen.getCursorScreenPoint()
-  console.log({xy})
-  console.log(displays)
-  console.log({bounds})
+  // console.log({xy})
+  // console.log(displays)
+  // console.log({bounds})
   const SCREEN = screen.getPrimaryDisplay().workAreaSize
-  console.log({SCREEN})
+  // console.log({SCREEN})
   // win = new BrowserWindow({width, height})
   // x = trayX - (trayWidth / 2) - (appWidth / 2);
   // y = trayY + trayHeight;
@@ -179,21 +195,56 @@ function start () {
   // win.setPosition(x, y);
   const { width, height } = SCREEN
 
-  const w = height / 4
-  const h = width / 4
-  const mainWindow = new BrowserWindow({
+
+  function toggleWindow (){
+    if (mainWindow.isVisible()) {
+      mainWindow.hide()
+    } else {
+      showWindow()
+    }
+  }
+  
+  function showWindow() {
+    // window's position is at the task icon below
+    // const position = getWindowPosition()
+    // mainWindow.setPosition(position.x, position.y, false)
+    mainWindow.show()
+    mainWindow.focus()
+  }
+
+  // function getWindowPosition() {
+  //   const windowBounds = mainWindow.getBounds()
+  //   const trayBounds = tray.getBounds()
+  
+  //   // Center window horizontally below the tray icon
+  //   const x = Math.round(trayBounds.x + (trayBounds.width / 2) - ( windowBounds.width / 2 ))
+  
+  //   // Position window 4 pixels vertically below the tray icon
+  //   const y = Math.round(trayBounds.y + trayBounds.height + windowBounds.height )
+  
+  //   return {x: x, y: y}
+  // }
+  
+  ipcMain.on('show-window', () => {
+    showWindow()
+  })
+
+  // const w = height / 4
+  // const h = width / 4
+ 
+  let mainWindow = new BrowserWindow({
     // width: 800,
     // height: 600,
-    width: w,
-    height: h,
-    // x: 100,
-    // y: 100,
+    // width: w,
+    // height: h,
+    // x: 0,
+    // y: 0,
     show: false,
-    // backgroundColor: '#f00',
+    backgroundColor: '#fff',
     titleBarStyle: 'hidden',
     titleBarStyle: "none",
-    hasShadow: false,
-    // alwaysOnTop: true,
+    hasShadow: true,
+    // alwaysOnTop: false,
     resizable: false,
     transparent: true,
     frame: false, // no window frame or border
@@ -201,7 +252,7 @@ function start () {
     fullscreenable: false,
     skipTaskbar: true,
     resizable: false,
-    movable: false,
+    movable: true,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -214,7 +265,6 @@ function start () {
   mainWindow.moveTop() // move it 'AlwaysOnTop'
   mainWindow.loadURL(wallet)
   mainWindow.setTitle('datdot-wallet')
-
   // mainWindow.show()
   // mainWindow.setAlwaysOnTop(true, 'screen')
   mainWindow.setVisibleOnAllWorkspaces(true)
@@ -231,7 +281,7 @@ function start () {
   mainWindow.on('blur', event => mainWindow.hide())
   mainWindow.toggleDevTools()
   mainWindow.center()
-  mainWindow.show()
+  // mainWindow.show()
 }
 
 // var net = require('net')
