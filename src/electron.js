@@ -1,6 +1,7 @@
 const electron = require('electron')
 const path = require('path')
 const fs = require('fs')
+const os = require('os')
 const { app, Menu, Tray, BrowserWindow, screen, session, ipcMain } = electron
 
 const iconPath = path.join(__dirname, 'assets/IconTemplate.png')
@@ -13,65 +14,66 @@ const args = process.argv.slice(2)
 const secret = ''
 const folder = fs.readdirSync(process.cwd())
 const wallet = (args[0] === '-- ') ? `file://${process.cwd()}/index.html#${secret}` : `http://localhost:9966/#${secret}`
-
-// Don't show the app in the doc (Mac)
-// app.dock.hide()
-
 var tray = app.whenReady().then(start)
 
 function start () {
   tray = new Tray(iconPath)
 
-  // createTray()
   // @NOTE https://www.electronjs.org/docs/api/menu-item
-  const template = [
-    // {
-    //   label: 'Edit',
-    //   submenu: [
-      // { label: 'Item1', type: 'radio' },
-      // { label: 'Item2', type: 'radio' },
-      // { label: 'Item3', type: 'radio', checked: true },
-      // { label: 'Item4', type: 'radio' },
-    //     {
-    //       label: 'Undo',
-    //       accelerator: 'CommandOrControl+Z',
-    //       role: 'undo',
-    //     },
-    //     {
-    //       label: 'Redo',
-    //       accelerator: 'Shift+CommandOrControl+Z',
-    //       role: 'redo',
-    //     },
-    //     { type: 'separator' },
-    //     {
-    //       label: 'Cut',
-    //       accelerator: 'CommandOrControl+X',
-    //       role: 'cut',
-    //     },
-    //     {
-    //       label: 'Select All',
-    //       accelerator: 'CommandOrControl+A',
-    //       role: 'selectall',
-    //     },
-    // 	],
-    // },
-    {
-      label: 'open datdot',
-      // accelerator: 'CommandOrControl+K',
-      async click (menuItem, browserWindow, event) {
-        mainWindow.show()
-      }
-    },
-    { type: 'separator' },
-    {
-      label: 'exit',
-      accelerator: 'Command+Q',
-      click() { app.quit() },
-    },
-  ]
-  // const contextMenu = Menu.buildFromTemplate(template)
-  // tray.setContextMenu(contextMenu)
-  createTray()
+
+  // Don't show the app in the doc (Mac)
+  if ( os.platform() === 'darwin') {
+      app.dock.hide()
+      createTray()
+  } 
+    const template = [
+      // {
+      //   label: 'Edit',
+      //   submenu: [
+        // { label: 'Item1', type: 'radio' },
+        // { label: 'Item2', type: 'radio' },
+        // { label: 'Item3', type: 'radio', checked: true },
+        // { label: 'Item4', type: 'radio' },
+      //     {
+      //       label: 'Undo',
+      //       accelerator: 'CommandOrControl+Z',
+      //       role: 'undo',
+      //     },
+      //     {
+      //       label: 'Redo',
+      //       accelerator: 'Shift+CommandOrControl+Z',
+      //       role: 'redo',
+      //     },
+      //     { type: 'separator' },
+      //     {
+      //       label: 'Cut',
+      //       accelerator: 'CommandOrControl+X',
+      //       role: 'cut',
+      //     },
+      //     {
+      //       label: 'Select All',
+      //       accelerator: 'CommandOrControl+A',
+      //       role: 'selectall',
+      //     },
+      // 	],
+      // },
+      {
+        label: 'open datdot',
+        // accelerator: 'CommandOrControl+K',
+        async click (menuItem, browserWindow, event) {
+          mainWindow.show()
+        }
+      },
+      { type: 'separator' },
+      {
+        label: 'exit',
+        accelerator: 'Command+Q',
+        click() { app.quit() },
+      },
+    ]
+    const contextMenu = Menu.buildFromTemplate(template)
+    tray.setContextMenu(contextMenu)
+  
 
   function createTray() {
     tray.on('right-click', toggleWindow)

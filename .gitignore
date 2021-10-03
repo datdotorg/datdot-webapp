@@ -1,7 +1,9 @@
+/@todo/*
 /node_modules/*
 /package-lock.json
+/pnpm-lock.yaml
 /npm-debug.log
-/yarn.lock
-/.DS_Store
 
-/@todo/*
+/yarn.lock
+/yarn-error.log
+.DS_Store

@@ -34,6 +34,12 @@
   "dependencies": {
     "bel": "^6.0.0",
     "csjs-inject": "^1.0.1",
+    "datdot-terminal": "git+https://github.com/fionataeyang/datdot-terminal.git",
+    "datdot-ui-button": "git+https://github.com/fionataeyang/datdot-ui-button.git",
+    "datdot-ui-dropdown": "git+https://github.com/fionataeyang/datdot-ui-dropdown.git",
+    "datdot-ui-icon": "git+https://github.com/fionataeyang/datdot-ui-icon.git",
+    "datdot-ui-input": "git+https://github.com/fionataeyang/datdot-ui-input.git",
+    "datdot-ui-list": "git+https://github.com/fionataeyang/datdot-ui-list.git",
     "electron": "^9.0.3"
   }
 }
