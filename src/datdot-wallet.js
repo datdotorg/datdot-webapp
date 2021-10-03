@@ -10,8 +10,6 @@ function wallet () {
   const css = style
   const el = bel`
   <main class=${css.wrap}>
-    <h1>datdot-wallet </h1>
-    <p>${location.href}</p>
     ${layout()}
   </main>
   `
@@ -20,7 +18,7 @@ function wallet () {
 
 let style = csjs`
 :root {
-  /* define colors ---------------------------------------------*/
+  /* define colors ---------------------------------------------*/  
   --b: 0, 0%;
   --r: 100%, 50%;
   --color-white: var(--b), 100%;
