@@ -1,9 +1,10 @@
 const bel = require('bel')
 const csjs = require('csjs-inject')
+const make_grid = require('make-grid')
 
 // components
 const container = require('container')
-const nav = require('components/datdot-ui-navigation')
+const footer = require('footer')
 
 module.exports = wallet
 const recipients = []
@@ -12,8 +13,8 @@ function wallet () {
   const css = style
   const el = bel`
   <main class=${css.wrap}>
-    ${container()}
-    ${nav({}, protocol('navigation'))}
+    ${container({name: 'wallet-container'}, protocol('wallet-container'))}
+    ${footer({name: 'wallet-footer'}, protocol('wallet-footer'))}
   </main>
   `
   document.body.append(el)
@@ -26,8 +27,8 @@ function wallet () {
   }
   function get (msg) {
     const {head, type, refs, meta, data} = msg
-    const from = ''
-    console.log(msg)
+    const from = head[0].split(' / ')[0]
+    // console.log(msg)
   }
 }
 
@@ -279,5 +280,16 @@ h1, h2, h3, h4, h5, h6 {
 }
 .wrap {
   display: grid;
+  ${make_grid({
+    rows: '1fr auto',
+    areas: ['container', 'nav']
+  })}
+  height: 100vh;
+}
+i-container {
+  grid-area: container;
+}
+i-nav {
+  grid-area: nav;
 }
 `
