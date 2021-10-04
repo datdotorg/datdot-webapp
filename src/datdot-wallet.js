@@ -1,6 +1,7 @@
 const bel = require('bel')
 const csjs = require('csjs-inject')
 const make_grid = require('make-grid')
+const message_maker = require('message-maker')
 // components
 const container = require('container')
 const footer = require('footer')
@@ -9,10 +10,11 @@ module.exports = wallet
 
 function wallet () {
   const recipients = []
+  const make = message_maker('datdot-wallet')
   const css = style
   const el = bel`<main class=${css.wrap}></main>`
   const main_container = container({name: 'wallet-container'}, protocol('wallet-container'))
-  const main_footer = footer({name: 'wallet-footer', to: 'wallet-contaniner'}, protocol('wallet-footer'))
+  const main_footer = footer({name: 'wallet-footer', to: 'wallet-container'}, protocol('wallet-footer'))
   el.append(main_container, main_footer)
   return el
 
@@ -25,10 +27,9 @@ function wallet () {
   function get (msg) {
     const {head, type, refs, meta, data} = msg
     const from = head[0].split(' / ')[0]
-    console.log(msg)
-    if (type.match(/ready/)) return
+    if (type.match(/ready/)) return 
     if (type.match(/click/)) return
-    if (type.match(/switch-page/)) return console.log(data)
+    if (type.match(/switch-page/)) return recipients[data.controls](make({type: 'load-page', data: data.page}))
   }
 }
 

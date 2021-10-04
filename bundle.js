@@ -2142,6 +2142,7 @@ module.exports = function (css, options) {
 const bel = require('bel')
 const csjs = require('csjs-inject')
 const make_grid = require('make-grid')
+const message_maker = require('message-maker')
 // components
 const container = require('container')
 const footer = require('footer')
@@ -2150,10 +2151,11 @@ module.exports = wallet
 
 function wallet () {
   const recipients = []
+  const make = message_maker('datdot-wallet')
   const css = style
   const el = bel`<main class=${css.wrap}></main>`
   const main_container = container({name: 'wallet-container'}, protocol('wallet-container'))
-  const main_footer = footer({name: 'wallet-footer', to: 'wallet-contaniner'}, protocol('wallet-footer'))
+  const main_footer = footer({name: 'wallet-footer', to: 'wallet-container'}, protocol('wallet-footer'))
   el.append(main_container, main_footer)
   return el
 
@@ -2166,10 +2168,9 @@ function wallet () {
   function get (msg) {
     const {head, type, refs, meta, data} = msg
     const from = head[0].split(' / ')[0]
-    console.log(msg)
-    if (type.match(/ready/)) return
+    if (type.match(/ready/)) return 
     if (type.match(/click/)) return
-    if (type.match(/switch-page/)) return console.log(data)
+    if (type.match(/switch-page/)) return recipients[data.controls](make({type: 'load-page', data: data.page}))
   }
 }
 
@@ -2434,7 +2435,7 @@ i-nav {
   grid-area: nav;
 }
 `
-},{"bel":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/browser.js","container":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/container.js","csjs-inject":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs-inject/index.js","footer":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/footer.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-navigation.js":[function(require,module,exports){
+},{"bel":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/browser.js","container":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/container.js","csjs-inject":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs-inject/index.js","footer":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/footer.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-navigation.js":[function(require,module,exports){
 const style_sheet = require('../support-style-sheet')
 const message_maker = require('../message-maker')
 const {i_button} = require('datdot-ui-button')
@@ -2532,9 +2533,9 @@ const message_maker = require('message-maker')
 module.exports = container
 function container({page = '*', flow = 'ui-container', name, body = {}}, protocol) {
     const recipients = []
-    const make = message_maker(`${name} / ${flow} / ${page}`)
     function widget () {
         const send = protocol(get)
+        const make = message_maker(`${name} / ${flow} / ${page}`)
         const el = document.createElement('i-container')
         const shadow = el.attachShadow({mode: 'open'})
         const content = bel`<section class="content"><h1>Datdot wallet</h1></section>`
@@ -2554,6 +2555,7 @@ function container({page = '*', flow = 'ui-container', name, body = {}}, protoco
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             send(make(msg))
+            if (type.match(/load-page/)) return console.log(msg)
         }
     }
 
