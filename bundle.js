@@ -2477,6 +2477,43 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#'},
         const plans_action = document.createElement('div')
         const search_action = document.createElement('div')
         const plan_action = document.createElement('div')
+        const button_theme = {
+            style: `
+                :host(i-button[aria-checked="true"]) {
+                    background-color: transparent;
+                    border-bottom: 2px solid hsl(var(--color-black));
+                }
+                :host(i-button[aria-checked="true"]) .icon g {
+                    --icon-fill: var(--color-black);
+                }
+                :host(i-button[aria-checked="false"]) .icon g {
+                    --icon-fill: var(--color-greyA2);
+                }
+            `,
+            props: {
+                border_radius: '0',
+                icon_fill_hover: 'var(--color-black)',
+                bg_color_hover: 'var(--color-greyED)',
+            }
+        }
+        const plan_button_theme = {
+            style: `
+                :host(i-button[aria-checked="true"]) {
+                    background-color: transparent;
+                }
+                :host(i-button[aria-checked="true"]) .icon g {
+                    --icon-fill: var(--color-black);
+                }
+                :host(i-button[aria-checked="false"]) .icon g {
+                    --icon-fill: var(--color-greyA2);
+                }
+            `,
+            props: {
+                border_radius: '0',
+                icon_fill_hover: 'var(--color-black)',
+                bg_color_hover: 'var(--color-greyED)',
+            }
+        }
         const main_option = [
             {name: 'account', hide: true},
             {name: 'activity', hide: false}
@@ -2502,24 +2539,15 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#'},
 
         main_option.forEach( obj => {
             if (obj.hide) return
-            const button = i_button({page, name: obj.name, icons: {icon: {name: obj.name}}}, actions_protocol(obj.name))
+            const button = i_button({page, name: obj.name, icons: {icon: {name: obj.name}}, theme: button_theme}, actions_protocol(obj.name))
             main_action.append(button)
         })
 
-        plans_option.forEach( obj => {
-            const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, checked: obj.checked}, actions_protocol(obj.name))
-            plans_action.append(button)
-        })
-
-        search_option.forEach( obj => {
-            const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, checked: obj.checked}, actions_protocol(obj.name))
-            search_action.append(button)
-        })
-
-        plan_option.forEach( obj => {
-            const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, checked: obj.checked}, actions_protocol(obj.name))
-            plan_action.append(button)
-        })
+        make_buttons ({args: plans_option, target: plans_action})
+        make_buttons ({args: search_option, target: search_action})
+        make_buttons ({args: plan_option, target: plan_action})
+        
+        
 
         // console.log(first_action, second_action)
         // !important style_sheet must be implemented before shadow 
@@ -2528,6 +2556,14 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#'},
         shadow.append(main_action, plans_action, search_action, plan_action)
         return el
 
+        function make_buttons ({args, target}) {
+            args.forEach( obj => {
+                if (obj.hide) return
+                const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, checked: obj.checked, theme: button_theme}, actions_protocol(obj.name))
+                target.append(button)
+            })
+        }
+        
         function actions_protocol (name) {
             return send => {
                 recipients[name] = send
@@ -2553,6 +2589,11 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#'},
             }
         })}
         background-color: hsl(var(--bg-color));
+        border-top: 1px solid hsl(var(--color-black));
+    }
+    :host(i-actions) > div {
+        display: flex;
+        gap: 2px;
     }
     `
     return widget()
@@ -2575,13 +2616,24 @@ function navigation ({page = '*', flow = 'ui-navigation', to = '#', name = '.', 
         const send = protocol(get)
         const el = document.createElement('nav')
         const shadow = el.attachShadow({mode: 'open'})
+        const tab_theme = {
+            style: `
+                i-button[disabled]:hover {
+                    border-color: 
+                }
+            `,
+            props: {
+                border_width: '1px',
+                border_color_hover: 'var(--color-black)'
+            }
+        }
         el.setAttribute('aria-label', name)
         el.setAttribute('role', 'tablist')
         // !important style_sheet must be implemented before shadow 
         // For Safari and Firefox cannot implement shadow before style
         style_sheet(shadow, style)
         body.forEach( opt => {
-            const tab = i_button({page, flow, role, name: opt.name.toLowerCase(), body: opt.body, current: opt.current, disabled: opt.disabled, controls: to}, btn_protocol(opt.name.toLowerCase()))
+            const tab = i_button({page, flow, role, name: opt.name.toLowerCase(), body: opt.body, current: opt.current, disabled: opt.disabled, controls: to, theme: tab_theme}, btn_protocol(opt.name.toLowerCase()))
             shadow.append(tab)
         })
         return el
