@@ -2,18 +2,33 @@ const bel = require('bel')
 const csjs = require('csjs-inject')
 
 // components
-const layout = require('layout')
+const container = require('container')
+const nav = require('components/datdot-ui-navigation')
 
 module.exports = wallet
+const recipients = []
 
 function wallet () {
   const css = style
   const el = bel`
   <main class=${css.wrap}>
-    ${layout()}
+    ${container()}
+    ${nav({}, protocol('navigation'))}
   </main>
   `
   document.body.append(el)
+
+  function protocol (name) {
+    return send => {
+      recipients[name] = send
+      return get
+    }
+  }
+  function get (msg) {
+    const {head, type, refs, meta, data} = msg
+    const from = ''
+    console.log(msg)
+  }
 }
 
 let style = csjs`
