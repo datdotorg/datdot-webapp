@@ -2144,19 +2144,42 @@ const csjs = require('csjs-inject')
 const make_grid = require('make-grid')
 const message_maker = require('message-maker')
 // components
-const container = require('container')
-const footer = require('footer')
+const i_container = require('container')
+const i_footer = require('footer')
 
 module.exports = wallet
 
-function wallet ({nav = []}) {
+
+const nav_option = [
+  {
+      name: 'user',
+      body: 'USER',
+      current: false
+  },
+  {
+      name: 'plans',
+      body: 'PLANS',
+      current: true
+  },
+  {
+      name: 'jobs',
+      body: 'JOBS',
+  },
+  {
+      name: 'apps',
+      body: 'APPS',
+      disabled: true,
+  }
+]
+
+function wallet () {
   const recipients = []
   const make = message_maker('datdot-wallet')
   const css = style
   const el = bel`<main class=${css.wrap}></main>`
-  const main_container = container({name: 'wallet-container'}, protocol('wallet-container'))
-  const main_footer = footer({name: 'wallet-footer', body: { nav }, to: 'wallet-container'}, protocol('wallet-footer'))
-  el.append(main_container, main_footer)
+  const container = i_container({name: 'wallet-container'}, protocol('wallet-container'))
+  const footer = i_footer({name: 'wallet-footer', body: { nav: nav_option }, to: 'wallet-container'}, protocol('wallet-footer'))
+  el.append(container, footer)
   return el
 
   function protocol (name) {
@@ -2435,7 +2458,97 @@ i-nav {
   grid-area: nav;
 }
 `
-},{"bel":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/browser.js","container":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/container.js","csjs-inject":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs-inject/index.js","footer":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/footer.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-navigation.js":[function(require,module,exports){
+},{"bel":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/browser.js","container":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/container.js","csjs-inject":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs-inject/index.js","footer":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/footer.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-actions.js":[function(require,module,exports){
+const style_sheet = require('support-style-sheet')
+const message_maker = require('message-maker')
+const {i_button} = require('datdot-ui-button')
+const make_grid = require('../make-grid')
+
+module.exports = i_actions
+function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#'}, protocol) {
+    const recipients = []
+    const make = message_maker(`${name} / ${flow} / ${page}`)
+
+    function widget () {
+        const send = protocol(get)
+        const el = document.createElement('i-actions')
+        const shadow = el.attachShadow({mode: 'open'})
+        const plans_option = [
+            'activity', 
+            ['plan-list', 'map', 'linechart'],
+            ['search', 'sort-up', 'sort-down', 'filter'],
+            ['play', 'pause', 'edit', 'remove']
+        ]
+        const action1 = document.createElement('div')
+        const action2 = document.createElement('div')
+
+        const actions = plans_option.forEach( (item, index) => {
+            if (typeof item === 'string') {
+                return action1.append( 
+                i_button({
+                    name: `${item}-action`, 
+                    icons: {icon: {name: item}}, 
+                    theme: {
+                        props: {
+                            border_radius: '0',
+                        }
+                    }
+                }, actions_protocol(`${item}-action`)) )
+            }
+            if (typeof item === 'object') {
+                return item.forEach( name => {
+                    action2.append( 
+                        i_button({
+                            name: `${name}-action`, 
+                            icons: {icon: {name}}, 
+                            theme: {
+                                props: {
+                                    border_radius: '0',
+                                }
+                            }
+                    }, actions_protocol(`${name}-action`)) )
+                })
+            }
+        })
+
+        // console.log(first_action, second_action)
+        // !important style_sheet must be implemented before shadow 
+        // For Safari and Firefox cannot implement shadow before style
+        style_sheet(shadow, style)
+        shadow.append(action1, action2)
+        return el
+
+        function actions_protocol (name) {
+            return send => {
+                recipients[name] = send
+                return get
+            }
+        }
+        function get (msg) {
+            const {head, type, refs, meta, data} = msg
+            const from = head[0].split(' / ')[0]
+            send(make(msg))
+            if (type.match(/load-page/)) return console.log(msg)
+        }
+    }
+
+    const style = `
+    :host(i-actions) {
+        --bg-color: var(--color-white);
+        display: grid;
+        ${make_grid({
+            columns: 'repeat(auto-fill, minmax(0, auto))',
+            auto: {
+                auto_flow: 'column'
+            }
+        })}
+        background-color: hsl(var(--bg-color));
+    }
+    `
+    return widget()
+}
+
+},{"../make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/index.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-navigation.js":[function(require,module,exports){
 const style_sheet = require('../support-style-sheet')
 const message_maker = require('../message-maker')
 const {i_button} = require('datdot-ui-button')
@@ -2454,7 +2567,7 @@ function navigation ({page = '*', flow = 'ui-navigation', to = '#', name = '.', 
         const shadow = el.attachShadow({mode: 'open'})
         el.setAttribute('aria-label', name)
         el.setAttribute('role', 'tablist')
-        // style_sheet must be implemented before shadow 
+        // !important style_sheet must be implemented before shadow 
         // For Safari and Firefox cannot implement shadow before style
         style_sheet(shadow, style)
         body.forEach( opt => {
@@ -2509,16 +2622,17 @@ const bel = require('bel')
 const style_sheet = require('support-style-sheet')
 const message_maker = require('message-maker')
 
-module.exports = container
-function container({page = '*', flow = 'ui-container', name, body = {}}, protocol) {
+module.exports = i_container
+function i_container({page = '*', flow = 'ui-container', name, body = {}}, protocol) {
     const recipients = []
+    const make = message_maker(`${name} / ${flow} / ${page}`)
+
     function widget () {
         const send = protocol(get)
-        const make = message_maker(`${name} / ${flow} / ${page}`)
         const el = document.createElement('i-container')
         const shadow = el.attachShadow({mode: 'open'})
         const content = bel`<section class="content"><h1>Datdot wallet</h1></section>`
-        // style_sheet must be implemented before shadow 
+        // !important style_sheet must be implemented before shadow 
         // For Safari and Firefox cannot implement shadow before style
         style_sheet(shadow, style)
         shadow.append(content)
@@ -2549,23 +2663,26 @@ function container({page = '*', flow = 'ui-container', name, body = {}}, protoco
 },{"bel":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/browser.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/footer.js":[function(require,module,exports){
 const bel = require('bel')
 const nav = require('components/datdot-ui-navigation')
+const actions = require('components/datdot-ui-actions')
 const message_maker = require('message-maker')
 
-module.exports = footer
-function footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = '#'}, protocol) {
+module.exports = i_footer
+function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = '#'}, protocol) {
     const recipients = []
     const make = message_maker(`${name} / ${flow} / ${page}`)
 
+    
     function widget () {
         const send = protocol(get)
         const el = bel`
         <footer>
-            ${nav({name: `${name}-nav`, body: body.nav, to}, nav_protocol(`${name}-nav`))}
+            ${actions({name: `${name}-actions`}, footer_protocol(`${name}-actions`) )}
+            ${nav({name: `${name}-nav`, body: body.nav, to}, footer_protocol(`${name}-nav`))}
         </footer>`
 
         return el
 
-        function nav_protocol (name) {
+        function footer_protocol (name) {
             return send => {
                 recipients[name] = send
                 return get
@@ -2581,7 +2698,7 @@ function footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = '#
 
     return widget()
 }
-},{"bel":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/browser.js","components/datdot-ui-navigation":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-navigation.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js":[function(require,module,exports){
+},{"bel":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/browser.js","components/datdot-ui-actions":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-actions.js","components/datdot-ui-navigation":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-navigation.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js":[function(require,module,exports){
 arguments[4]["/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/make-grid.js"][0].apply(exports,arguments)
 },{}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js":[function(require,module,exports){
 arguments[4]["/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/message-maker.js"][0].apply(exports,arguments)
@@ -2620,28 +2737,7 @@ function head (lang = 'UTF-8', title = 'Datdot wallet') {
 },{}],"/Users/bxbcats/prj/play/web/datdot-wallet/web/wallet.js":[function(require,module,exports){
 const wallet = require('..')
 const head = require('./head')()
-const nav_option = [
-    {
-        name: 'user',
-        body: 'USER',
-        current: false
-    },
-    {
-        name: 'plans',
-        body: 'PLANS',
-        current: true
-    },
-    {
-        name: 'jobs',
-        body: 'JOBS',
-    },
-    {
-        name: 'apps',
-        body: 'APPS',
-        disabled: true,
-    }
-]
-const el = wallet({nav: nav_option})
+const el = wallet()
 document.body.append(el)
 // fetch('http://localhost:9966/').then( x => x.text()).then(x => {
 //   console.log({x})

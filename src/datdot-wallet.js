@@ -3,19 +3,42 @@ const csjs = require('csjs-inject')
 const make_grid = require('make-grid')
 const message_maker = require('message-maker')
 // components
-const container = require('container')
-const footer = require('footer')
+const i_container = require('container')
+const i_footer = require('footer')
 
 module.exports = wallet
 
-function wallet ({nav = []}) {
+
+const nav_option = [
+  {
+      name: 'user',
+      body: 'USER',
+      current: false
+  },
+  {
+      name: 'plans',
+      body: 'PLANS',
+      current: true
+  },
+  {
+      name: 'jobs',
+      body: 'JOBS',
+  },
+  {
+      name: 'apps',
+      body: 'APPS',
+      disabled: true,
+  }
+]
+
+function wallet () {
   const recipients = []
   const make = message_maker('datdot-wallet')
   const css = style
   const el = bel`<main class=${css.wrap}></main>`
-  const main_container = container({name: 'wallet-container'}, protocol('wallet-container'))
-  const main_footer = footer({name: 'wallet-footer', body: { nav }, to: 'wallet-container'}, protocol('wallet-footer'))
-  el.append(main_container, main_footer)
+  const container = i_container({name: 'wallet-container'}, protocol('wallet-container'))
+  const footer = i_footer({name: 'wallet-footer', body: { nav: nav_option }, to: 'wallet-container'}, protocol('wallet-footer'))
+  el.append(container, footer)
   return el
 
   function protocol (name) {
