@@ -1,23 +1,20 @@
 const bel = require('bel')
 const csjs = require('csjs-inject')
 const make_grid = require('make-grid')
-
 // components
 const container = require('container')
 const footer = require('footer')
 
 module.exports = wallet
-const recipients = []
 
 function wallet () {
+  const recipients = []
   const css = style
-  const el = bel`
-  <main class=${css.wrap}>
-    ${container({name: 'wallet-container'}, protocol('wallet-container'))}
-    ${footer({name: 'wallet-footer'}, protocol('wallet-footer'))}
-  </main>
-  `
-  document.body.append(el)
+  const el = bel`<main class=${css.wrap}></main>`
+  const main_container = container({name: 'wallet-container'}, protocol('wallet-container'))
+  const main_footer = footer({name: 'wallet-footer', to: 'wallet-contaniner'}, protocol('wallet-footer'))
+  el.append(main_container, main_footer)
+  return el
 
   function protocol (name) {
     return send => {
@@ -28,7 +25,10 @@ function wallet () {
   function get (msg) {
     const {head, type, refs, meta, data} = msg
     const from = head[0].split(' / ')[0]
-    // console.log(msg)
+    console.log(msg)
+    if (type.match(/ready/)) return
+    if (type.match(/click/)) return
+    if (type.match(/switch-page/)) return console.log(data)
   }
 }
 

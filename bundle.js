@@ -2142,23 +2142,20 @@ module.exports = function (css, options) {
 const bel = require('bel')
 const csjs = require('csjs-inject')
 const make_grid = require('make-grid')
-
 // components
 const container = require('container')
 const footer = require('footer')
 
 module.exports = wallet
-const recipients = []
 
 function wallet () {
+  const recipients = []
   const css = style
-  const el = bel`
-  <main class=${css.wrap}>
-    ${container({name: 'wallet-container'}, protocol('wallet-container'))}
-    ${footer({name: 'wallet-footer'}, protocol('wallet-footer'))}
-  </main>
-  `
-  document.body.append(el)
+  const el = bel`<main class=${css.wrap}></main>`
+  const main_container = container({name: 'wallet-container'}, protocol('wallet-container'))
+  const main_footer = footer({name: 'wallet-footer', to: 'wallet-contaniner'}, protocol('wallet-footer'))
+  el.append(main_container, main_footer)
+  return el
 
   function protocol (name) {
     return send => {
@@ -2169,7 +2166,10 @@ function wallet () {
   function get (msg) {
     const {head, type, refs, meta, data} = msg
     const from = head[0].split(' / ')[0]
-    // console.log(msg)
+    console.log(msg)
+    if (type.match(/ready/)) return
+    if (type.match(/click/)) return
+    if (type.match(/switch-page/)) return console.log(data)
   }
 }
 
@@ -2442,7 +2442,7 @@ const make_grid = require('../make-grid')
 
 module.exports = navigation
 
-function navigation ({page = '*', flow = 'ui-navigation', name = '.', body = [], theme = {}}, protocol) {
+function navigation ({page = '*', flow = 'ui-navigation', to = '#', name = '.', body = [], theme = {}}, protocol) {
     const recipients = []
     const make = message_maker(`${name} / ${flow} / ${page}`)
     
@@ -2453,24 +2453,20 @@ function navigation ({page = '*', flow = 'ui-navigation', name = '.', body = [],
             {
                 name: 'user',
                 body: 'USER',
-                controls: '#',
                 current: false
             },
             {
                 name: 'plans',
                 body: 'PLANS',
-                controls: '#',
                 current: true
             },
             {
                 name: 'jobs',
                 body: 'JOBS',
-                controls: '#',
             },
             {
                 name: 'apps',
                 body: 'APPS',
-                controls: '#',
                 disabled: true,
             }
         ]
@@ -2478,24 +2474,25 @@ function navigation ({page = '*', flow = 'ui-navigation', name = '.', body = [],
         const shadow = el.attachShadow({mode: 'open'})
         el.setAttribute('aria-label', name)
         el.setAttribute('role', 'tablist')
+        // style_sheet must be implemented before shadow 
+        // For Safari and Firefox cannot implement shadow before style
+        style_sheet(shadow, style)
         options.forEach( opt => {
-            const tab = i_button({page, flow, role, name: opt.name.toLowerCase(), body: opt.body, current: opt.current, disabled: opt.disabled, controls: opt.controls}, btn_protocol(opt.name.toLowerCase()))
+            const tab = i_button({page, flow, role, name: opt.name.toLowerCase(), body: opt.body, current: opt.current, disabled: opt.disabled, controls: to}, btn_protocol(opt.name.toLowerCase()))
             shadow.append(tab)
         })
-        style_sheet(shadow, style)
         return el
 
         function handle_page_event (from, checked) {
             const state = !checked
             const type = state ? 'checked' : 'unchecked'
-            send( make({to: 'content', type: 'page-changed', data: {page: from}}) )
-            recipients[from](make({type, data: state}))
-
             const {childNodes} = el.shadowRoot
-            const args = [...childNodes].forEach( child => {
-                if (child.localName !== 'style') return child
+            const args = [...childNodes].filter( child => child.localName !== 'style')
+            args.forEach( tab => {
+                if (tab.getAttribute('aria-label') == from) return send( make({type: 'switch-page', data: {page: from, controls: tab.getAttribute('aria-controls')}}) )
+                recipients[tab.getAttribute('aria-label')](make({type, data: checked}))
             })
-            console.log(args)
+            recipients[from](make({type, data: state}))
         }
 
         function btn_protocol (name) {
@@ -2536,14 +2533,15 @@ module.exports = container
 function container({page = '*', flow = 'ui-container', name, body = {}}, protocol) {
     const recipients = []
     const make = message_maker(`${name} / ${flow} / ${page}`)
-
     function widget () {
         const send = protocol(get)
         const el = document.createElement('i-container')
         const shadow = el.attachShadow({mode: 'open'})
         const content = bel`<section class="content"><h1>Datdot wallet</h1></section>`
-        shadow.append(content)
+        // style_sheet must be implemented before shadow 
+        // For Safari and Firefox cannot implement shadow before style
         style_sheet(shadow, style)
+        shadow.append(content)
         return el
 
         function container_protocol (name) {
@@ -2561,7 +2559,7 @@ function container({page = '*', flow = 'ui-container', name, body = {}}, protoco
 
     const style = `
     :host(i-container) {
-
+        display: grid;
     }
     `
     return widget()
@@ -2573,7 +2571,7 @@ const nav = require('components/datdot-ui-navigation')
 const message_maker = require('message-maker')
 
 module.exports = footer
-function footer ({page = '*', flow = 'ui-footer', name = '.'}, protocol) {
+function footer ({page = '*', flow = 'ui-footer', name = '.', to = '#'}, protocol) {
     const recipients = []
     const make = message_maker(`${name} / ${flow} / ${page}`)
 
@@ -2581,7 +2579,7 @@ function footer ({page = '*', flow = 'ui-footer', name = '.'}, protocol) {
         const send = protocol(get)
         const el = bel`
         <footer>
-            ${nav({name: `${name}-nav`}, nav_protocol(`${name}-nav`))}
+            ${nav({name: `${name}-nav`, to}, nav_protocol(`${name}-nav`))}
         </footer>`
 
         return el
@@ -2607,7 +2605,21 @@ arguments[4]["/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-b
 },{}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js":[function(require,module,exports){
 arguments[4]["/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/message-maker.js"][0].apply(exports,arguments)
 },{}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js":[function(require,module,exports){
-arguments[4]["/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/support-style-sheet.js"][0].apply(exports,arguments)
+module.exports = support_style_sheet
+function support_style_sheet (shadow, style) {
+    return (() => {
+        try {
+            const sheet = new CSSStyleSheet()
+            sheet.replaceSync(style)
+            shadow.adoptedStyleSheets = [sheet]
+            return true 
+        } catch (error) { 
+            const inject_style = `<style>${style}</style>`
+            shadow.innerHTML = `${inject_style}`
+            return false
+        }
+    })()
+}
 },{}],"/Users/bxbcats/prj/play/web/datdot-wallet/web/head.js":[function(require,module,exports){
 module.exports = head
 
@@ -2627,7 +2639,8 @@ function head (lang = 'UTF-8', title = 'Datdot wallet') {
 },{}],"/Users/bxbcats/prj/play/web/datdot-wallet/web/wallet.js":[function(require,module,exports){
 const wallet = require('..')
 const head = require('./head')()
-const el = wallet()
+document.body.append(wallet())
+
 // fetch('http://localhost:9966/').then( x => x.text()).then(x => {
 //   console.log({x})
 // })
