@@ -2481,6 +2481,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#'},
         ]
         const action1 = document.createElement('div')
         const action2 = document.createElement('div')
+        
         const actions = plans_option.forEach( (item, index) => {
             if (typeof item === 'string') {
                 return action1.append( 
