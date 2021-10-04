@@ -2472,50 +2472,60 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#'},
     function widget () {
         const send = protocol(get)
         const el = document.createElement('i-actions')
-        const shadow = el.attachShadow({mode: 'open'})
-        const plans_option = [
-            'activity', 
-            ['plan-list', 'map', 'linechart'],
-            ['search', 'sort-up', 'sort-down', 'filter'],
-            ['play', 'pause', 'edit', 'remove']
+        const shadow = el.attachShadow({mode: 'closed'})
+        const main_action = document.createElement('div')
+        const plans_action = document.createElement('div')
+        const search_action = document.createElement('div')
+        const plan_action = document.createElement('div')
+        const main_option = [
+            {name: 'account', hide: true},
+            {name: 'activity', hide: false}
         ]
-        const action1 = document.createElement('div')
-        const action2 = document.createElement('div')
-        
-        const actions = plans_option.forEach( (item, index) => {
-            if (typeof item === 'string') {
-                return action1.append( 
-                i_button({
-                    name: `${item}-action`, 
-                    icons: {icon: {name: item}}, 
-                    theme: {
-                        props: {
-                            border_radius: '0',
-                        }
-                    }
-                }, actions_protocol(`${item}-action`)) )
-            }
-            if (typeof item === 'object') {
-                return item.forEach( name => {
-                    action2.append( 
-                        i_button({
-                            name: `${name}-action`, 
-                            icons: {icon: {name}}, 
-                            theme: {
-                                props: {
-                                    border_radius: '0',
-                                }
-                            }
-                    }, actions_protocol(`${name}-action`)) )
-                })
-            }
+        const plans_option =  [
+            {name: 'plan-list', role: 'switch', checked: true},
+            {name: 'map', role: 'switch', checked: true},
+            {name: 'linechart', role: 'switch', checked: true},
+        ]
+        const search_option = [
+            {name: 'search', role: 'switch', checked: false},
+            {name: 'sort-up', role: 'switch', checked: false},
+            {name: 'sort-down', role: 'switch', checked: true},
+            {name: 'filter', role: 'switch', checked: false},
+        ]
+
+        const plan_option = [
+            {name: 'play', role: 'switch', checked: true},
+            {name: 'pause', role: 'switch', checked: false},
+            {name: 'edit', role: 'button'},
+            {name: 'trash', role: 'button'}
+        ]
+
+        main_option.forEach( obj => {
+            if (obj.hide) return
+            const button = i_button({page, name: obj.name, icons: {icon: {name: obj.name}}}, actions_protocol(obj.name))
+            main_action.append(button)
+        })
+
+        plans_option.forEach( obj => {
+            const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, checked: obj.checked}, actions_protocol(obj.name))
+            plans_action.append(button)
+        })
+
+        search_option.forEach( obj => {
+            const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, checked: obj.checked}, actions_protocol(obj.name))
+            search_action.append(button)
+        })
+
+        plan_option.forEach( obj => {
+            const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, checked: obj.checked}, actions_protocol(obj.name))
+            plan_action.append(button)
         })
 
         // console.log(first_action, second_action)
         // !important style_sheet must be implemented before shadow 
         // For Safari and Firefox cannot implement shadow before style
         style_sheet(shadow, style)
-        shadow.append(action1, action2)
+        shadow.append(main_action, plans_action, search_action, plan_action)
         return el
 
         function actions_protocol (name) {
