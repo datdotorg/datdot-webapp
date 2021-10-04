@@ -8,13 +8,13 @@ const footer = require('footer')
 
 module.exports = wallet
 
-function wallet () {
+function wallet ({nav = []}) {
   const recipients = []
   const make = message_maker('datdot-wallet')
   const css = style
   const el = bel`<main class=${css.wrap}></main>`
   const main_container = container({name: 'wallet-container'}, protocol('wallet-container'))
-  const main_footer = footer({name: 'wallet-footer', to: 'wallet-container'}, protocol('wallet-footer'))
+  const main_footer = footer({name: 'wallet-footer', body: { nav }, to: 'wallet-container'}, protocol('wallet-footer'))
   el.append(main_container, main_footer)
   return el
 

@@ -2149,13 +2149,13 @@ const footer = require('footer')
 
 module.exports = wallet
 
-function wallet () {
+function wallet ({nav = []}) {
   const recipients = []
   const make = message_maker('datdot-wallet')
   const css = style
   const el = bel`<main class=${css.wrap}></main>`
   const main_container = container({name: 'wallet-container'}, protocol('wallet-container'))
-  const main_footer = footer({name: 'wallet-footer', to: 'wallet-container'}, protocol('wallet-footer'))
+  const main_footer = footer({name: 'wallet-footer', body: { nav }, to: 'wallet-container'}, protocol('wallet-footer'))
   el.append(main_container, main_footer)
   return el
 
@@ -2450,27 +2450,6 @@ function navigation ({page = '*', flow = 'ui-navigation', to = '#', name = '.', 
     function widget () {
         const role = 'tab'
         const send = protocol(get)
-        const options = [
-            {
-                name: 'user',
-                body: 'USER',
-                current: false
-            },
-            {
-                name: 'plans',
-                body: 'PLANS',
-                current: true
-            },
-            {
-                name: 'jobs',
-                body: 'JOBS',
-            },
-            {
-                name: 'apps',
-                body: 'APPS',
-                disabled: true,
-            }
-        ]
         const el = document.createElement('nav')
         const shadow = el.attachShadow({mode: 'open'})
         el.setAttribute('aria-label', name)
@@ -2478,7 +2457,7 @@ function navigation ({page = '*', flow = 'ui-navigation', to = '#', name = '.', 
         // style_sheet must be implemented before shadow 
         // For Safari and Firefox cannot implement shadow before style
         style_sheet(shadow, style)
-        options.forEach( opt => {
+        body.forEach( opt => {
             const tab = i_button({page, flow, role, name: opt.name.toLowerCase(), body: opt.body, current: opt.current, disabled: opt.disabled, controls: to}, btn_protocol(opt.name.toLowerCase()))
             shadow.append(tab)
         })
@@ -2573,7 +2552,7 @@ const nav = require('components/datdot-ui-navigation')
 const message_maker = require('message-maker')
 
 module.exports = footer
-function footer ({page = '*', flow = 'ui-footer', name = '.', to = '#'}, protocol) {
+function footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = '#'}, protocol) {
     const recipients = []
     const make = message_maker(`${name} / ${flow} / ${page}`)
 
@@ -2581,7 +2560,7 @@ function footer ({page = '*', flow = 'ui-footer', name = '.', to = '#'}, protoco
         const send = protocol(get)
         const el = bel`
         <footer>
-            ${nav({name: `${name}-nav`, to}, nav_protocol(`${name}-nav`))}
+            ${nav({name: `${name}-nav`, body: body.nav, to}, nav_protocol(`${name}-nav`))}
         </footer>`
 
         return el
@@ -2641,8 +2620,29 @@ function head (lang = 'UTF-8', title = 'Datdot wallet') {
 },{}],"/Users/bxbcats/prj/play/web/datdot-wallet/web/wallet.js":[function(require,module,exports){
 const wallet = require('..')
 const head = require('./head')()
-document.body.append(wallet())
-
+const nav_option = [
+    {
+        name: 'user',
+        body: 'USER',
+        current: false
+    },
+    {
+        name: 'plans',
+        body: 'PLANS',
+        current: true
+    },
+    {
+        name: 'jobs',
+        body: 'JOBS',
+    },
+    {
+        name: 'apps',
+        body: 'APPS',
+        disabled: true,
+    }
+]
+const el = wallet({nav: nav_option})
+document.body.append(el)
 // fetch('http://localhost:9966/').then( x => x.text()).then(x => {
 //   console.log({x})
 // })
