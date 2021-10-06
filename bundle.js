@@ -2496,26 +2496,8 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#'},
                 bg_color_hover: 'var(--color-greyED)',
             }
         }
-        const plan_button_theme = {
-            style: `
-                :host(i-button[aria-checked="true"]) {
-                    background-color: transparent;
-                }
-                :host(i-button[aria-checked="true"]) .icon g {
-                    --icon-fill: var(--color-black);
-                }
-                :host(i-button[aria-checked="false"]) .icon g {
-                    --icon-fill: var(--color-greyA2);
-                }
-            `,
-            props: {
-                border_radius: '0',
-                icon_fill_hover: 'var(--color-black)',
-                bg_color_hover: 'var(--color-greyED)',
-            }
-        }
         const main_option = [
-            {name: 'account', hide: true},
+            {name: 'account', hide: false},
             {name: 'activity', hide: false}
         ]
         const plans_option =  [
@@ -2529,7 +2511,6 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#'},
             {name: 'sort-down', role: 'switch', checked: true},
             {name: 'filter', role: 'switch', checked: false},
         ]
-
         const plan_option = [
             {name: 'play', role: 'switch', checked: true},
             {name: 'pause', role: 'switch', checked: false},
@@ -2545,10 +2526,9 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#'},
 
         make_buttons ({args: plans_option, target: plans_action})
         make_buttons ({args: search_option, target: search_action})
-        make_buttons ({args: plan_option, target: plan_action})
+        // only display when click plan
+        // make_buttons ({args: plan_option, target: plan_action})
         
-        
-
         // console.log(first_action, second_action)
         // !important style_sheet must be implemented before shadow 
         // For Safari and Firefox cannot implement shadow before style
@@ -2563,7 +2543,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#'},
                 target.append(button)
             })
         }
-        
+
         function actions_protocol (name) {
             return send => {
                 recipients[name] = send
@@ -2592,7 +2572,13 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#'},
         border-top: 1px solid hsl(var(--color-black));
     }
     :host(i-actions) > div {
-        display: flex;
+        display: grid;
+        ${make_grid({
+            columns: 'repeat(auto-fill, minmax(30px, auto))',
+            auto: {
+                auto_flow: 'column'
+            }
+        })}
         gap: 2px;
     }
     `
