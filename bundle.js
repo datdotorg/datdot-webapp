@@ -2178,7 +2178,7 @@ function wallet () {
   const css = style
   const el = bel`<main class=${css.wrap}></main>`
   const container = i_container({name: 'wallet-container'}, protocol('wallet-container'))
-  const footer = i_footer({name: 'wallet-footer', body: { nav: nav_option }, to: 'wallet-container'}, protocol('wallet-footer'))
+  const footer = i_footer({name: 'wallet-footer', body: { nav: nav_option, status: {activities: 1054678910} }, to: 'wallet-container'}, protocol('wallet-footer'))
   el.append(container, footer)
   return el
 
@@ -2485,12 +2485,6 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         search_action.classList.add('action')
         plan_action.classList.add('action')
         activities_event.classList.add('badge')
-        // if there is any activites would be dispalying
-        if (activities > 0) {
-            main_action.append(activities_event)
-            activities_event.textContent = activities
-        }
-        
         const button_theme = {
             style: `
                 :host(i-button[aria-checked="true"]) {
@@ -2541,13 +2535,25 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         make_buttons ({args: plans_option, target: plans_action})
         make_buttons ({args: search_option, target: search_action})
         // only display when click plan
-        // make_buttons ({args: plan_option, target: plan_action})
+        if(plan && plan.selected) make_buttons ({args: plan_option, target: plan_action})
         
         // console.log(first_action, second_action)
         // !important style_sheet must be implemented before shadow 
         // For Safari and Firefox cannot implement shadow before style
         style_sheet(shadow, style)
         shadow.append(main_action, plans_action, search_action, plan_action)
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // if there is any activites would be dispalying
+            if (activities > 0) {
+                main_action.append(activities_event)
+                activities_event.textContent = activities
+                let x = activities_event.clientWidth
+                console.log(x)
+                activities_event.style.transform = `scale(0.8) translateX(${-20}px)`
+            }
+        })
+         
         return el
 
         function make_buttons ({args, target}) {
@@ -2611,7 +2617,8 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             column: '2'
         })}
         position: absolute;
-        transform: scale(0.8) translate(72%, -10px);
+        transform: scale(0.8);
+        top: -10px;
         z-index: 1;
         font-size: var(--size);
         color: hsl(var(--color));
@@ -2749,22 +2756,24 @@ function i_container({page = '*', flow = 'ui-container', name, body = {}}, proto
 
 },{"bel":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/browser.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/footer.js":[function(require,module,exports){
 const bel = require('bel')
-const nav = require('components/datdot-ui-navigation')
-const actions = require('components/datdot-ui-actions')
 const message_maker = require('message-maker')
+// widgets
+const i_nav = require('components/datdot-ui-navigation')
+const i_actions = require('components/datdot-ui-actions')
 
 module.exports = i_footer
 function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = '#'}, protocol) {
+    const {nav = {}, status = {}} = body
+
     const recipients = []
     const make = message_maker(`${name} / ${flow} / ${page}`)
-
     
     function widget () {
         const send = protocol(get)
         const el = bel`
         <footer>
-            ${actions({name: `${name}-actions`}, footer_protocol(`${name}-actions`) )}
-            ${nav({name: `${name}-nav`, body: body.nav, to}, footer_protocol(`${name}-nav`))}
+            ${i_actions({name: `${name}-actions`, status}, footer_protocol(`${name}-actions`) )}
+            ${i_nav({name: `${name}-nav`, body: nav, to}, footer_protocol(`${name}-nav`))}
         </footer>`
 
         return el

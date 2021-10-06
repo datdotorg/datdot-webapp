@@ -37,7 +37,7 @@ function wallet () {
   const css = style
   const el = bel`<main class=${css.wrap}></main>`
   const container = i_container({name: 'wallet-container'}, protocol('wallet-container'))
-  const footer = i_footer({name: 'wallet-footer', body: { nav: nav_option }, to: 'wallet-container'}, protocol('wallet-footer'))
+  const footer = i_footer({name: 'wallet-footer', body: { nav: nav_option, status: {activities: 1054678910} }, to: 'wallet-container'}, protocol('wallet-footer'))
   el.append(container, footer)
   return el
 
