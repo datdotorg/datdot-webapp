@@ -2468,6 +2468,7 @@ const style_sheet = require('support-style-sheet')
 const message_maker = require('message-maker')
 const {i_button} = require('datdot-ui-button')
 const make_grid = require('../make-grid')
+const make_element = require('../make-element')
 
 module.exports = i_actions
 function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', status = {}, theme = {}}, protocol) {
@@ -2478,31 +2479,22 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
 
     function widget () {
         const send = protocol(get)
-        const el = document.createElement('i-actions')
+        const el = make_element({name: 'i-actions'})
         const shadow = el.attachShadow({mode: 'closed'})
-        const list = document.createElement('div')
+        const list = make_element({name: 'div', classlist: 'list'})
         // for user account, activities
-        const main_action = document.createElement('div')
+        const main_action = make_element({name: 'div', classlist: 'action main'})
         // for plans list using
-        const plans_action = document.createElement('div')
+        const plans_action = make_element({name: 'div', classlist: 'action'})
         // search, sort up/down, filter
-        const search_action = document.createElement('div')
+        const search_action = make_element({name: 'div', classlist: 'action'})
         // for each plan using
-        const settings_action = document.createElement('div')
+        const settings_action = make_element({name: 'div', classlist: 'action settings'})
         // for each plan using
-        const plan_action = document.createElement('div')
+        const plan_action = make_element({name: 'div', classlist: 'action'})
         // for activities using
-        const activities_event = document.createElement('span')
-        const box = document.createElement('div')
-        // add class for elements
-        list.classList.add('list')
-        main_action.className = 'action main'
-        settings_action.className = 'action settings'
-        plans_action.classList.add('action')
-        search_action.classList.add('action')
-        plan_action.classList.add('action')
-        activities_event.classList.add('badge')
-        
+        const activities_event = make_element({name: 'span', classlist: 'badge'})
+        const box = make_element({name: 'div', classlist: 'activities'})
         const button_theme = {
             style: `
                 :host(i-button[aria-checked="true"]) {
@@ -2588,7 +2580,6 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
                 if (obj.checked) var checked = {checked: obj.checked}
                 const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, ...checked, theme: button_theme}, actions_protocol(obj.name))
                 if (obj.name === 'activity') {
-                    box.classList.add('activities')
                     box.append(button)
                     return target.append(box)
                 } 
@@ -2675,7 +2666,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
     return widget()
 }
 
-},{"../make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/index.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-navigation.js":[function(require,module,exports){
+},{"../make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","../make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/index.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-navigation.js":[function(require,module,exports){
 const style_sheet = require('../support-style-sheet')
 const message_maker = require('../message-maker')
 const {i_button} = require('datdot-ui-button')
@@ -2838,7 +2829,30 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
 
     return widget()
 }
-},{"bel":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/browser.js","components/datdot-ui-actions":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-actions.js","components/datdot-ui-navigation":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-navigation.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js":[function(require,module,exports){
+},{"bel":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/browser.js","components/datdot-ui-actions":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-actions.js","components/datdot-ui-navigation":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-navigation.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js":[function(require,module,exports){
+module.exports = make_element
+
+function make_element({name = '', classlist = null, role = undefined }) {
+    const el = document.createElement(name)
+    if (classlist) ste_class()
+    if (role) set_role()
+    return el
+
+    function ste_class () {
+        el.className = classlist
+    }
+    
+    function set_role () {
+        if (role.match(/button|switch/)) {
+            const tabindex = role.match(/button|switch/) ? 0 : -1
+            el.setAttribute('tabindex',  tabindex)
+        }
+        el.setAttribute('role', role)
+    }
+}
+
+
+},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js":[function(require,module,exports){
 arguments[4]["/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/make-grid.js"][0].apply(exports,arguments)
 },{}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js":[function(require,module,exports){
 arguments[4]["/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/message-maker.js"][0].apply(exports,arguments)
