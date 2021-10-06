@@ -31,13 +31,18 @@ const nav_option = [
   }
 ]
 
+const status = {
+  activities: 12345,
+  plan: '19v8cMTwMjYvVQgtmZo91gxagp43Pv7XSc'
+}
+
 function wallet () {
   const recipients = []
   const make = message_maker('datdot-wallet')
   const css = style
   const el = bel`<main class=${css.wrap}></main>`
   const container = i_container({name: 'wallet-container'}, protocol('wallet-container'))
-  const footer = i_footer({name: 'wallet-footer', body: { nav: nav_option, status: {activities: 12345} }, to: 'wallet-container'}, protocol('wallet-footer'))
+  const footer = i_footer({name: 'wallet-footer', body: { nav: nav_option, status }, to: 'wallet-container'}, protocol('wallet-footer'))
   el.append(container, footer)
   return el
 

@@ -2172,13 +2172,18 @@ const nav_option = [
   }
 ]
 
+const status = {
+  activities: 12345,
+  plan: '19v8cMTwMjYvVQgtmZo91gxagp43Pv7XSc'
+}
+
 function wallet () {
   const recipients = []
   const make = message_maker('datdot-wallet')
   const css = style
   const el = bel`<main class=${css.wrap}></main>`
   const container = i_container({name: 'wallet-container'}, protocol('wallet-container'))
-  const footer = i_footer({name: 'wallet-footer', body: { nav: nav_option, status: {activities: 12345} }, to: 'wallet-container'}, protocol('wallet-footer'))
+  const footer = i_footer({name: 'wallet-footer', body: { nav: nav_option, status }, to: 'wallet-container'}, protocol('wallet-footer'))
   el.append(container, footer)
   return el
 
@@ -2475,6 +2480,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         const send = protocol(get)
         const el = document.createElement('i-actions')
         const shadow = el.attachShadow({mode: 'closed'})
+        const list = document.createElement('div')
         // for user account, activities
         const main_action = document.createElement('div')
         // for plans list using
@@ -2482,16 +2488,21 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         // search, sort up/down, filter
         const search_action = document.createElement('div')
         // for each plan using
+        const settings_action = document.createElement('div')
+        // for each plan using
         const plan_action = document.createElement('div')
         // for activities using
         const activities_event = document.createElement('span')
         const box = document.createElement('div')
         // add class for elements
-        main_action.classList.add('action')
+        list.classList.add('list')
+        main_action.className = 'action main'
+        settings_action.className = 'action settings'
         plans_action.classList.add('action')
         search_action.classList.add('action')
         plan_action.classList.add('action')
         activities_event.classList.add('badge')
+        
         const button_theme = {
             style: `
                 :host(i-button[aria-checked="true"]) {
@@ -2532,28 +2543,31 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             {name: 'edit', role: 'button'},
             {name: 'trash', role: 'button'}
         ]
+        const settings_option = [
+            {name: 'plus'},
+            {name: 'action', role: 'switch', checked: false},
+            {name: 'help', role: 'switch', checked: false}
+        ]
         
-        main_option.forEach( obj => {
-            if (obj.hide) return
-            const button = i_button({page, name: obj.name, icons: {icon: {name: obj.name}}, theme: button_theme}, actions_protocol(obj.name))
-            if (obj.name === 'activity') {
-                box.classList.add('activities')
-                box.append(button)
-                return main_action.append(box)
-            } 
-            main_action.append(button)
-        })
-
-        make_buttons ({args: plans_option, target: plans_action})
-        make_buttons ({args: search_option, target: search_action})
+        make_buttons({args: main_option, target: main_action})
+        make_buttons({args: settings_option, target: settings_action})
+        make_buttons({args: plans_option, target: plans_action})
+        make_buttons({args: search_option, target: search_action})
         // only display when click plan
-        if(plan && plan.selected) make_buttons ({args: plan_option, target: plan_action})
         
         // console.log(first_action, second_action)
         // !important style_sheet must be implemented before shadow 
         // For Safari and Firefox cannot implement shadow before style
         style_sheet(shadow, style)
-        shadow.append(main_action, plans_action, search_action, plan_action)
+        shadow.append(main_action)
+        if (plans_action) list.append(plans_action)
+        if (search_action) list.append(search_action)
+        if (plan) {
+            make_buttons ({args: plan_option, target: plan_action})
+            list.append(plan_action)
+        } 
+        shadow.append(list)
+        shadow.append(settings_action)
 
         document.addEventListener('DOMContentLoaded', () => {
             // if there is any activites would be dispalying
@@ -2567,10 +2581,17 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
          
         return el
 
+
         function make_buttons ({args, target}) {
             args.forEach( obj => {
                 if (obj.hide) return
-                const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, checked: obj.checked, theme: button_theme}, actions_protocol(obj.name))
+                if (obj.checked) var checked = {checked: obj.checked}
+                const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, ...checked, theme: button_theme}, actions_protocol(obj.name))
+                if (obj.name === 'activity') {
+                    box.classList.add('activities')
+                    box.append(button)
+                    return target.append(box)
+                } 
                 target.append(button)
             })
         }
@@ -2594,7 +2615,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         --bg-color: var(--color-white);
         display: grid;
         ${make_grid({
-            columns: 'repeat(auto-fill, minmax(0, auto))',
+            columns: 'auto 1fr auto',
             auto: {
                 auto_flow: 'column'
             }
@@ -2602,10 +2623,15 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         background-color: hsl(var(--bg-color));
         border-top: 1px solid hsl(var(--color-black));
     }
+    .list {
+        display: flex;
+        overflow: scroll hidden;
+    }
     .action {
         display: grid;
+        /* auto fill all buttons */
         ${make_grid({
-            columns: 'repeat(auto-fill, minmax(30px, auto))',
+            columns: 'repeat(auto-fill, minmax(1fr, auto))',
             auto: {
                 auto_flow: 'column'
             }
@@ -2641,6 +2667,9 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         background-color: hsla(var(--bg-color), var(--opacity));
         padding: 4px 6px;
         border-radius: var(--primary-radius);
+    }
+    .settings {
+        grid-column-end: -1;
     }
     `
     return widget()
