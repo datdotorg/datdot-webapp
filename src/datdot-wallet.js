@@ -308,7 +308,7 @@ h1, h2, h3, h4, h5, h6 {
     rows: '1fr auto',
     areas: ['container', 'nav']
   })}
-  height: 100vh;
+  height: 100%;
 }
 i-container {
   grid-area: container;

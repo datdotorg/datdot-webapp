@@ -2449,7 +2449,7 @@ h1, h2, h3, h4, h5, h6 {
     rows: '1fr auto',
     areas: ['container', 'nav']
   })}
-  height: 100vh;
+  height: 100%;
 }
 i-container {
   grid-area: container;
@@ -2465,7 +2465,9 @@ const {i_button} = require('datdot-ui-button')
 const make_grid = require('../make-grid')
 
 module.exports = i_actions
-function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#'}, protocol) {
+function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', status = {}, theme = {}}, protocol) {
+    const {activities = 0, plan = undefined} = status
+    
     const recipients = []
     const make = message_maker(`${name} / ${flow} / ${page}`)
 
@@ -2477,6 +2479,18 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#'},
         const plans_action = document.createElement('div')
         const search_action = document.createElement('div')
         const plan_action = document.createElement('div')
+        const activities_event = document.createElement('span')
+        main_action.classList.add('action')
+        plans_action.classList.add('action')
+        search_action.classList.add('action')
+        plan_action.classList.add('action')
+        activities_event.classList.add('badge')
+        // if there is any activites would be dispalying
+        if (activities > 0) {
+            main_action.append(activities_event)
+            activities_event.textContent = activities
+        }
+        
         const button_theme = {
             style: `
                 :host(i-button[aria-checked="true"]) {
@@ -2571,7 +2585,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#'},
         background-color: hsl(var(--bg-color));
         border-top: 1px solid hsl(var(--color-black));
     }
-    :host(i-actions) > div {
+    :host(i-actions) .action {
         display: grid;
         ${make_grid({
             columns: 'repeat(auto-fill, minmax(30px, auto))',
@@ -2580,6 +2594,31 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#'},
             }
         })}
         gap: 2px;
+    }
+    :host(i-actions) .action > i-button[aria-label="activity"] {
+        ${make_grid({
+            row: '1',
+            column: '2'
+        })}
+    }
+    :host(i-actions) .badge {
+        --color: var(--color-white);
+        --size: var(--size12);
+        --bg-color: var(--color-black);
+        --opacity: 0.6;
+        ${make_grid({
+            row: '1',
+            column: '2'
+        })}
+        position: absolute;
+        transform: scale(0.8) translate(72%, -10px);
+        z-index: 1;
+        font-size: var(--size);
+        color: hsl(var(--color));
+        text-align: center;
+        background-color: hsla(var(--bg-color), var(--opacity));
+        padding: 4px 6px;
+        border-radius: var(--primary-radius);
     }
     `
     return widget()
