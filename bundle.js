@@ -2471,8 +2471,8 @@ const make_grid = require('make-grid')
 const make_element = require('make-element')
 
 module.exports = i_actions
-function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', status = {}, theme = {}}, protocol) {
-    const {activities = 0, plan = undefined} = status
+function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', state = {}, theme = {}}, protocol) {
+    const {activities = 0, plan = undefined} = state
     
     const recipients = []
     const make = message_maker(`${name} / ${flow} / ${page}`)
@@ -2515,29 +2515,29 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             }
         }
         const main_option = [
-            {name: 'account', hide: false},
-            {name: 'activity', hide: false}
+            {name: 'account', role: 'switch', current: false, hide: false},
+            {name: 'activity',role: 'switch', current: false, hide: false}
         ]
         const plans_option =  [
-            {name: 'plan-list', role: 'switch', checked: true},
-            {name: 'map', role: 'switch', checked: true},
-            {name: 'linechart', role: 'switch', checked: true},
+            {name: 'plan-list', role: 'switch', checked: true, current: false},
+            {name: 'map', role: 'switch', checked: true, current: false},
+            {name: 'linechart', role: 'switch', checked: true, current: false},
         ]
         const search_option = [
-            {name: 'search', role: 'switch', checked: false},
-            {name: 'sort-up', role: 'switch', checked: false},
-            {name: 'sort-down', role: 'switch', checked: true},
-            {name: 'filter', role: 'switch', checked: false},
+            {name: 'search', role: 'switch', checked: false, current: false},
+            {name: 'sort-up', role: 'switch', checked: false, current: false},
+            {name: 'sort-down', role: 'switch', checked: true, current: false},
+            {name: 'filter', role: 'switch', checked: false, current: false},
         ]
         const plan_option = [
-            {name: 'play', role: 'switch', checked: true},
-            {name: 'pause', role: 'switch', checked: false},
-            {name: 'edit', role: 'button'},
+            {name: 'play', role: 'switch', checked: true, current: false},
+            {name: 'pause', role: 'switch', checked: false, current: false},
+            {name: 'edit', role: 'switch', current: false},
             {name: 'trash', role: 'button'}
         ]
         const settings_option = [
-            {name: 'action', role: 'switch', checked: false},
-            {name: 'help', role: 'switch', checked: false}
+            {name: 'action', role: 'switch', checked: false, current: false},
+            {name: 'help', role: 'switch', checked: false, current: false}
         ]
         
         make_buttons({args: main_option, target: main_action})
@@ -2581,15 +2581,22 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
                 if (obj.name === 'activity') {
                     box.append(button)
                     return target.append(box)
-                } 
+                }
+                if ('current' in obj) button.setAttribute('aria-current', obj.current)
                 target.append(button)
             })
         }
 
-        function handle_click_event (head) {
+        function handle_switch (from, checked) {
+            const state = !checked
+            recipients[from](make({to: from, type: 'switched', data: state}))
+        }
+
+        function handle_click (msg) {
+            const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             const role = head[0].split(' / ')[1]
-            console.log(from, role)
+            if (role.match(/switch/)) return handle_switch(from, data)
             console.log(recipients[from])
         }
 
@@ -2603,7 +2610,8 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             send(make(msg))
-            if (type.match(/click/)) return handle_click_event(head)
+            console.log(msg)
+            if (type.match(/click/)) return handle_click(msg)
             if (type.match(/load-page/)) return console.log(msg)
         }
     }
