@@ -2536,7 +2536,6 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             {name: 'trash', role: 'button'}
         ]
         const settings_option = [
-            {name: 'plus'},
             {name: 'action', role: 'switch', checked: false},
             {name: 'help', role: 'switch', checked: false}
         ]
@@ -2587,6 +2586,13 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             })
         }
 
+        function handle_click_event (head) {
+            const from = head[0].split(' / ')[0]
+            const role = head[0].split(' / ')[1]
+            console.log(from, role)
+            console.log(recipients[from])
+        }
+
         function actions_protocol (name) {
             return send => {
                 recipients[name] = send
@@ -2597,6 +2603,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             send(make(msg))
+            if (type.match(/click/)) return handle_click_event(head)
             if (type.match(/load-page/)) return console.log(msg)
         }
     }
