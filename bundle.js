@@ -1011,7 +1011,10 @@ function i_button (option, protocol) {
                 set_attr({aria: 'controls', prop: controls})
                 el.setAttribute('tabindex', is_current ? 0 : -1)
             }
-            if (role === 'switch') set_attr({aria: 'checked', prop: is_checked})
+            if (role === 'switch') {
+                set_attr({aria: 'checked', prop: is_checked})
+                if (current) set_attr({aria: 'current', prop: is_current})
+            }
             if (role === 'listbox') {
                 set_attr({aria: 'haspopup', prop: role})
             }
@@ -1052,9 +1055,13 @@ function i_button (option, protocol) {
 
         // toggle
         function switched_event (data) {
-            is_checked = data
+            const {checked, current} = data
+            is_checked = checked
+            is_current = current
+            console.log(data);
             if (!is_checked) return el.removeAttribute('aria-checked')
             set_attr({aria: 'checked', prop: is_checked})
+            if (current) set_attr({aria: 'current', prop: is_current})
         }
         // dropdown menu
         function expanded_event (data) {
@@ -2334,23 +2341,9 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             }
         })
 
-        observer(main_action)
         
         return el
-        
-        function observer (args) {
-            const {childNodes} = args
-            const mutation = new MutationObserver(mutations)
-            childNodes.forEach( item => mutation.observe(item, {attributes: true, childList: true}))
-        }
-
-        function mutations (entries) {
-            entries.forEach( entry => {
-                const {target, type, chidList} = entry
-                if (type === 'attributes') console.log(target)
-            })
-        }
-
+      
         function make_buttons ({args, target}) {
             args.forEach( obj => {
                 if (obj.hide) return
@@ -2365,9 +2358,8 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             })
         }
 
-        function handle_switch (from, checked) {
-            const state = !checked
-            recipients[from](make({to: from, type: 'switched', data: state}))
+        function handle_switch (from, {checked, current}) {
+            recipients[from](make({to: from, type: 'switched', data: {checked: !checked, current: !current }}))
         }
 
         function handle_click (msg) {
