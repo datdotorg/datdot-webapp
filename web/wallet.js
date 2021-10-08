@@ -106,8 +106,10 @@ const style = csjs`
     --primary-weight-hover: 300;
     --primary-color: var(--color-black);
     --primary-color-hover: var(--color-white);
+    --primary-color-focus: var(--color-black);
     --primary-bg-color: var(--color-white);
     --primary-bg-color-hover: var(--color-black);
+    --primary-bg-color-focus: var(--color-greyA2), 0.5;
     --primary-border-width: 1px;
     --primary-border-style: solid;
     --primary-border-color: var(--color-black);
@@ -193,6 +195,7 @@ const style = csjs`
     --link-size-hover: var(--primary-link-size);
     --link-color: var(--color-heavy-blue);
     --link-color-hover: var(--color-dodger-blue);
+    --link-color-focus: var(--color-flame);
     --link-bg-color: transparent;
     --link-icon-size: var(--size30);
     --link-icon-fill: var(--primary-link-color);

@@ -738,8 +738,8 @@ const make_grid = require('make-grid')
 
 module.exports = {i_button, i_link}
 
-function i_link (option, protocol) {
-    const {page = '*', flow = 'ui-link', name, role='link', body, link = {}, icons = {}, classlist, cover, disabled = false, theme = {}} = option
+function i_link (opt, protocol) {
+    const {page = '*', flow = 'ui-link', name, role='link', body, link = {}, icons = {}, classlist, cover, disabled = false, theme = {}} = opt
     const { icon } = icons
     const make_icon = icons && icon ? main_icon(icon) : undefined
     let {url = '#', target = '_self'} = link
@@ -807,7 +807,7 @@ function i_link (option, protocol) {
         // weight
         weight, weight_hover, disabled_weight,
         // color
-        color, color_hover, disabled_color,
+        color, color_hover, color_focus, disabled_color,
         // background-color    
         bg_color, bg_color_hover, disabled_bg_color,
         // deco
@@ -834,6 +834,7 @@ function i_link (option, protocol) {
         --size: ${size ? size : 'var(--link-size)'};
         --weight: ${weight ? weight : 'var(--weight300)'};
         --color: ${color ? color : 'var(--link-color)'};
+        --color-focus: ${color_focus ? color_focus : 'var(--link-color-focus)'};
         --bg-color: ${bg_color ? bg_color : 'var(--link-bg-color)'};
         --opacity: ${opacity ? opacity : '0'};
         --deco: ${deco ? deco : 'none'};
@@ -859,6 +860,9 @@ function i_link (option, protocol) {
         --bg-color: ${bg_color_hover ? bg_color_hover : 'var(--color-white)'};
         --opacity: ${opacity ? opacity : '0'};
         text-decoration: var(--deco);
+    }
+    :host(i-link:focus) {
+        --color: ${color_focus ? color_focus : 'var(--link-color-focus)'};
     }
     :host(i-link) img {
         --scale: ${scale ? scale : '1'};
@@ -926,6 +930,9 @@ function i_link (option, protocol) {
         text-decoration: none;
         background-color: transparent;
     }
+    :host(i-link[role="menuitem"]:focus) {
+        --color: var(--color-focus);
+    }
     :host(i-link[role="menuitem"]) .icon {
         --icon-size: ${icon_size ? icon_size : 'var(--menu-icon-size)'};
     }
@@ -963,8 +970,8 @@ function i_link (option, protocol) {
     return widget()
 }
 
-function i_button (option, protocol) {
-    const {page = "*", flow = 'ui-button', name, role = 'button', controls, body = '', icons = {}, cover, classlist = null, mode = '', state, expanded = false, current = false, selected = false, checked = false, disabled = false, theme = {}} = option
+function i_button (opt, protocol) {
+    const {page = "*", flow = 'ui-button', name, role = 'button', controls, body = '', icons = {}, cover, classlist = null, mode = '', state, expanded = false, current = false, selected = false, checked = false, disabled = false, theme = {}} = opt
     const {icon, select = {}, list = {}} = icons
     const make_icon = icon ? main_icon(icon) : undefined
     if (role === 'listbox') var make_select_icon = select_icon(select)
@@ -1011,28 +1018,22 @@ function i_button (option, protocol) {
                 set_attr({aria: 'controls', prop: controls})
                 el.setAttribute('tabindex', is_current ? 0 : -1)
             }
-            if (role === 'switch') {
-                set_attr({aria: 'checked', prop: is_checked})
-                if (current) set_attr({aria: 'current', prop: is_current})
-            }
-            if (role === 'listbox') {
-                set_attr({aria: 'haspopup', prop: role})
-            }
+            if (role === 'switch') set_attr({aria: 'checked', prop: is_checked})
+            if (role === 'listbox') set_attr({aria: 'haspopup', prop: role})
             if (disabled) {
                 set_attr({aria: 'disabled', prop: is_disabled})
                 el.setAttribute('disabled', is_disabled)
             } 
             if (is_checked) set_attr({aria: 'checked', prop: is_checked})
-            if (is_current) {
+            if (role.match(/option/)) {
                 is_selected = is_current
-                set_attr({aria: 'current', prop: is_current})
-            }
-            if (is_selected || !is_selected && role.match(/option/)) {
                 set_attr({aria: 'selected', prop: is_selected})
-            } 
+            }
             if (is_expanded) {
                 set_attr({aria: 'selected', prop: is_expanded})
             }
+            // make current status
+            if ('current' in opt) set_attr({aria: 'current', prop: is_current})
         }
 
         function set_attr ({aria, prop}) {
@@ -1058,7 +1059,6 @@ function i_button (option, protocol) {
             const {checked, current} = data
             is_checked = checked
             is_current = current
-            console.log(data);
             if (!is_checked) return el.removeAttribute('aria-checked')
             set_attr({aria: 'checked', prop: is_checked})
             if (current) set_attr({aria: 'current', prop: is_current})
@@ -1068,11 +1068,11 @@ function i_button (option, protocol) {
             is_expanded = !data
             set_attr({aria: 'expanded', prop: is_expanded})
         }
-        // tab checked
-        function checked_event (data) {
-            is_checked = data
-            is_current = is_checked
-            set_attr({aria: 'selected', prop: is_checked})
+        // tab selected
+        function tab_selected_event (data) {
+            is_selected = data.selected
+            is_current = data.current
+            set_attr({aria: 'selected', prop: is_selected})
             set_attr({aria: 'current', prop: is_current})
             el.setAttribute('tabindex', is_current ? 0 : -1)
         }
@@ -1133,21 +1133,23 @@ function i_button (option, protocol) {
                 }
             } 
         }
+
         // button click
         function handle_click () {
             if (is_current) return
             const type = 'click'
-            if (role === 'tab') return send( make({type, data: is_checked}) )
-            if (role === 'switch') return send( make({type, data: is_checked}) )
+            if (role === 'button' && 'current' in opt) return 
+            if (role === 'tab') return send( make({type, data: {selected: true, current: true, controls: el.getAttribute('aria-controls')}}) )
+            if (role === 'switch') return send( make({type, data: {checked: is_checked, current: !current}}) )
             if (role === 'listbox') {
                 is_expanded = !is_expanded
-                return send( make({type, data: {expanded: is_expanded}}) )
+                return send( make({type, data: {expanded: is_expanded, current: !current}}) )
             }
             if (role === 'option') {
                 is_selected = !is_selected
                 return send( make({type, data: {selected: is_selected, content: is_selected ? {text: body, cover, icon} : '' }}) )
             }
-            send( make({type}) )
+            if (role === 'button') return send( make({type, data: {current: is_current}}) )
         }
         // protocol get msg
         function get (msg) {
@@ -1157,7 +1159,7 @@ function i_button (option, protocol) {
             // dropdown
             if (type.match(/expanded|collapsed/)) return expanded_event(!data)
             // tab, checkbox
-            if (type.match(/checked|unchecked/)) return checked_event(data)
+            if (type.match(/tab-selected/)) return tab_selected_event(data)
             // option
             if (type.match(/selected|unselected/)) return list_selected_event(data)
             if (type.match(/changed/)) return changed_event(data)
@@ -1176,9 +1178,9 @@ function i_button (option, protocol) {
         // weight
         weight, weight_hover, 
         // color
-        color, color_hover,
+        color, color_hover, color_focus,
         // background-color
-        bg_color, bg_color_hover,
+        bg_color, bg_color_hover, bg_color_focus,
         // border
         border_color, border_color_hover,
         border_width, border_style, border_opacity, border_radius, 
@@ -1244,7 +1246,9 @@ function i_button (option, protocol) {
         --size: ${size ? size : 'var(--primary-size)'};
         --weight: ${weight ? weight : 'var(--weight300)'};
         --color: ${color ? color : 'var(--primary-color)'};
+        --color-focus: ${color_focus ? color_focus : 'var(--primary-color-focus)'};
         --bg-color: ${bg_color ? bg_color : 'var(--primary-bg-color)'};
+        --bg-color-focus: ${bg_color_focus ? bg_color_focus : 'var(--primary-bg-color-focus)'};
         ${width && `--width: ${width}`};
         ${height && `--height: ${height}`};
         --opacity: ${opacity ? opacity : '1'};
@@ -1297,6 +1301,11 @@ function i_button (option, protocol) {
     :host(i-button:hover:foucs:active) {
         --bg-color: ${bg_color ? bg_color : 'var(--primary-bg-color)'};
     }
+    :host(i-button:focus) {
+        --color: var(--color-focus);
+        --bg-color: var(--bg-color-focus);
+        background-color: hsla(var(--bg-color));
+    }  
     :host(i-button) g {
         --icon-fill: ${icon_fill ? icon_fill : 'var(--primary-icon-fill)'};
         fill: hsl(var(--icon-fill));
@@ -1343,6 +1352,10 @@ function i_button (option, protocol) {
     :host(i-button[role="switch"]:hover) {
         --size: ${size_hover ? size_hover : 'var(--primary-size-hover)'};
     }
+    :host(i-button[role="switch"]:focus) {
+        --color: var(--color-focus);
+        --bg-color: var(--bg-color-focus);
+    }
     :host(i-button[role="listbox"]) {
         --color: ${listbox_collapsed_listbox_color ? listbox_collapsed_listbox_color : 'var(--listbox-collapsed-listbox-color)'};
         --size: ${listbox_collapsed_listbox_size ? listbox_collapsed_listbox_size : 'var(--listbox-collapsed-listbox-size)'};
@@ -1354,6 +1367,10 @@ function i_button (option, protocol) {
         --size: ${listbox_collapsed_listbox_size_hover ? listbox_collapsed_listbox_size_hover : 'var(--listbox-collapsed-listbox-size-hover)'};
         --weight: ${listbox_collapsed_listbox_weight_hover ? listbox_collapsed_listbox_weight_hover : 'var(--listbox-collapsed-listbox-weight-hover)'};
         --bg-color: ${listbox_collapsed_bg_color_hover ? listbox_collapsed_bg_color_hover : 'var(--listbox-collapsed-bg-color-hover)'};
+    }
+    :host(i-button[role="listbox"]:focus), :host(i-button[role="listbox"][aria-expanded="true"]:focus) {
+        --color: var(--color-focus);
+        --bg-color: var(--bg-color-focus);
     }
     :host(i-button[role="listbox"]) > .icon {
         ${grid.icon ? make_grid(grid.icon) : make_grid({column: '2'})}
@@ -1384,6 +1401,10 @@ function i_button (option, protocol) {
         --bg-color: ${current_bg_color ? current_bg_color : 'var(--current-list-bg-color)'};
         --opacity: ${opacity ? opacity : '0'}
     }
+    :host(i-button[role="option"][aria-current="true"]:focus) {
+        --color: var(--color-focus);
+        --bg-color: var(--bg-color-focus);
+    }
     :host(i-button[role="option"][disabled]), :host(i-button[role="option"][disabled]:hover) {
         --size: ${disabled_size ? disabled_size : 'var(--primary-disabled-size)'};
         --color: ${disabled_color ? disabled_color : 'var(--primary-disabled-color)'};
@@ -1406,6 +1427,10 @@ function i_button (option, protocol) {
         --weight: ${current_weight ? current_weight : 'var(--current-weight)'};
         --color: ${current_color ? current_color : 'var(--current-color)'};
         --bg-color: ${current_bg_color ? current_bg_color : 'var(--current-bg-color)'};
+    }
+    :host(i-button[aria-current="true"]:focus) {
+        --color: var(--color-focus);
+        --bg-color: var(--bg-color-focus);
     }
     :host(i-button[role="option"][aria-current="true"][aria-selected="true"]) .option > .icon, 
     :host(i-button[role="option"][aria-current="true"][aria-selected="true"]:hover) .option > .icon {
@@ -1494,6 +1519,10 @@ function i_button (option, protocol) {
         --size: ${size_hover ? size_hover : 'var(--menu-size-hover)'};
         --weight: ${weight_hover ? weight_hover : 'var(--menu-weight-hover)'};
         --color: ${color_hover ? color_hover : 'var(--menu-color-hover)'};
+    }
+    :host(i-button[role="menuitem"]:focus) {
+        --color: var(--color-focus);
+        --bg-color: var(--bg-color-focus);
     }
     :host(i-button[role="menuitem"]) .avatar {
         --avatar-width: ${avatar_width ? avatar_width : 'var(--menu-avatar-width)'};
@@ -2282,8 +2311,8 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             }
         }
         const main_option = [
-            {name: 'account', role: 'switch', current: false, hide: false},
-            {name: 'activity',role: 'switch', current: false, hide: false}
+            {name: 'account', role: 'button', current: false, hide: false},
+            {name: 'activity',role: 'button', current: false, hide: false}
         ]
         const plans_option =  [
             {name: 'plan-list', role: 'switch', checked: true, current: false},
@@ -2484,16 +2513,26 @@ function navigation ({page = '*', flow = 'ui-navigation', to = '#', name = '.', 
         })
         return el
 
-        function handle_page_event (from, checked) {
-            const state = !checked
-            const type = state ? 'checked' : 'unchecked'
+        function handle_page_event (from, {selected, current}) {
+            // const state = !checked
+            // const type = state ? 'checked' : 'unchecked'
+            // const {childNodes} = el.shadowRoot
+            // const args = [...childNodes].filter( child => child.localName !== 'style')
+            // args.forEach( tab => {
+            //     if (tab.getAttribute('aria-label') == from) return send( make({type: 'switch-page', data: {page: from, controls: tab.getAttribute('aria-controls')}}) )
+            //     recipients[tab.getAttribute('aria-label')](make({type, data: checked}))
+            // })
+            // recipients[from](make({type, data: state}))
             const {childNodes} = el.shadowRoot
-            const args = [...childNodes].filter( child => child.localName !== 'style')
-            args.forEach( tab => {
-                if (tab.getAttribute('aria-label') == from) return send( make({type: 'switch-page', data: {page: from, controls: tab.getAttribute('aria-controls')}}) )
-                recipients[tab.getAttribute('aria-label')](make({type, data: checked}))
+            const result = [...childNodes].filter( child => child.getAttribute('aria-label') !== from)
+            const current_message = make({type: 'tab-selected', data: {selected, current}})
+            recipients[from](current_message)
+            send(current_message)
+            // if not target is from, then make tab current and selected changed to false
+            result.forEach( tab => {
+                const name = tab.getAttribute('aria-label')
+                recipients[name](make({type: 'tab-selected', data: {selected: !selected, current: !current}}))
             })
-            recipients[from](make({type, data: state}))
         }
 
         function btn_protocol (name) {
@@ -2782,8 +2821,10 @@ const style = csjs`
     --primary-weight-hover: 300;
     --primary-color: var(--color-black);
     --primary-color-hover: var(--color-white);
+    --primary-color-focus: var(--color-black);
     --primary-bg-color: var(--color-white);
     --primary-bg-color-hover: var(--color-black);
+    --primary-bg-color-focus: var(--color-greyA2), 0.5;
     --primary-border-width: 1px;
     --primary-border-style: solid;
     --primary-border-color: var(--color-black);
@@ -2869,6 +2910,7 @@ const style = csjs`
     --link-size-hover: var(--primary-link-size);
     --link-color: var(--color-heavy-blue);
     --link-color-hover: var(--color-dodger-blue);
+    --link-color-focus: var(--color-flame);
     --link-bg-color: transparent;
     --link-icon-size: var(--size30);
     --link-icon-fill: var(--primary-link-color);
