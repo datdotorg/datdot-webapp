@@ -1034,6 +1034,7 @@ function i_button (opt, protocol) {
             }
             // make current status
             if ('current' in opt) set_attr({aria: 'current', prop: is_current})
+            if ('expanded' in opt) set_attr({aria: 'expanded', prop: is_expanded})
         }
 
         function set_attr ({aria, prop}) {
@@ -1342,6 +1343,10 @@ function i_button (opt, protocol) {
         width: 100%;
         height: auto;
     }
+    :host(i-button[aria-expanded="true"]:focus) {
+        --color: var(--color-focus);
+        --bg-color: var(--bg-color-focus);
+    } 
     :host(i-button[role="tab"]) {
         --width: ${width ? width : '100%'};
         --border-radius: ${border_radius ? border_radius : '0'};
@@ -2280,9 +2285,9 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         // for user account, activities
         const main_action = make_element({name: 'div', classlist: 'action main'})
         // for plans list using
-        const plans_action = make_element({name: 'div', classlist: 'action'})
+        const plans_action = make_element({name: 'div', classlist: 'action plans'})
         // search, sort up/down, filter
-        const search_action = make_element({name: 'div', classlist: 'action'})
+        const search_action = make_element({name: 'div', classlist: 'action search'})
         // for each plan using
         const settings_action = make_element({name: 'div', classlist: 'action settings'})
         // for each plan using
@@ -2319,7 +2324,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         }
         const main_option = [
             {name: 'account', role: 'button', expanded: false, theme: button_theme, hide: false},
-            {name: 'activity',role: 'button', expanded: false, theme: button_theme, hide: false}
+            {name: 'activity',role: 'button', theme: button_theme, hide: false}
         ] 
         const plans_option =  [
             {name: 'plan-list', role: 'switch', expanded: true, checked: true, theme: switch_theme},
@@ -2382,8 +2387,9 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
                 if (obj.hide) return
                 if (obj.checked) var checked = {checked: obj.checked}
                 const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, ...checked, theme: obj.theme}, actions_protocol(obj.name))
-                button.setAttribute('aria-expanded', obj.expanded)
+                if ('expanded' in obj) button.setAttribute('aria-expanded', obj.expanded)
                 if (obj.name === 'activity') {
+                    const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, ...checked, controls: 'wallet-container', theme: obj.theme}, actions_protocol(obj.name))
                     box.append(button)
                     return target.append(box)
                 }
@@ -2391,16 +2397,20 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             })
         }
 
-        function handle_switch (from, {checked, current}) {
-            recipients[from](make({to: from, type: 'switched', data: {checked: !checked, current: !current }}))
+        function handle_switch (from, {checked}) {
+            if (from.match(/sort/)) {
+                if (from === 'sort-up') recipients['sort-down'](make({type: 'switched', data: {checked}}))
+                if (from === 'sort-down') recipients['sort-up'](make({type: 'switched', data: {checked}}))
+            }
+            recipients[from](make({type: 'switched', data: {checked: !checked}}))
         }
 
         function handle_click (msg) {
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             const role = head[0].split(' / ')[1]
-            if (role.match(/switch/)) return handle_switch(from, data)
-            console.log(recipients[from])
+            if (role === 'switch') return handle_switch(from, data)
+            recipients[from](make({type, data}))
         }
 
         function actions_protocol (name) {
@@ -2447,6 +2457,9 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
     }
     .activities {
         position: relative;
+    }
+    i-button[aria-expanded="true"] {
+        border-bottom: 2px solid hsl(var(--color-black));
     }
     i-button[aria-label="activity"] {
         ${make_grid({
