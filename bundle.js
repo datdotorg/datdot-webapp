@@ -2291,21 +2291,9 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         const activities_event = make_element({name: 'span', classlist: 'badge'})
         const box = make_element({name: 'div', classlist: 'activities'})
         const button_theme = {
-            style: `
-                :host(i-button[aria-checked="true"]) {
-                    background-color: transparent;
-                    border-bottom: 2px solid hsl(var(--color-black));
-                }
-                :host(i-button[aria-checked="true"]) .icon g {
-                    --icon-fill: var(--color-black);
-                }
-                :host(i-button[aria-checked="false"]) .icon g {
-                    --icon-fill: var(--color-greyA2);
-                }
-            `,
             props: {
                 border_radius: '0',
-                icon_fill: 'var(--color-greyA2)',
+                icon_fill: 'var(--color-black)',
                 icon_fill_hover: 'var(--color-black)',
                 bg_color_hover: 'var(--color-greyED)',
             }
@@ -2314,7 +2302,6 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             style: `
                 :host(i-button[aria-checked="true"]) {
                     background-color: transparent;
-                    border-bottom: 2px solid hsl(var(--color-black));
                 }
                 :host(i-button[aria-checked="true"]) .icon g {
                     --icon-fill: var(--color-black);
@@ -2330,51 +2317,38 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
                 bg_color_hover: 'var(--color-greyED)',
             }
         }
-        const main_option = {
-            items: [
-                {name: 'account', role: 'button', hide: false},
-                {name: 'activity',role: 'button', hide: false}
-            ],
-            theme: button_theme
-        }
-        const plans_option =  {
-            items: [
-                {name: 'plan-list', role: 'switch', checked: true},
-                {name: 'map', role: 'switch', checked: true},
-                {name: 'linechart', role: 'switch', checked: true},
-            ],
-            theme: switch_theme
-        }
-        const search_option = {
-            items: [
-                {name: 'search', role: 'switch', checked: false},
-                {name: 'sort-up', role: 'switch', checked: false},
-                {name: 'sort-down', role: 'switch', checked: true},
-                {name: 'filter', role: 'switch', checked: false},
-            ],
-            theme: button_theme
-        }
-        const plan_option = {
-            items: [
-                {name: 'play', role: 'switch', checked: true},
-                {name: 'pause', role: 'switch', checked: false},
-                {name: 'edit', role: 'switch'},
-                {name: 'trash', role: 'button'}
-            ],
-            theme: button_theme
-        }
-        const settings_option = {
-            items: [
-                {name: 'action', role: 'switch', checked: false},
-                {name: 'help', role: 'switch', checked: false}
-            ],
-            theme: button_theme
-        }
+        const main_option = [
+            {name: 'account', role: 'button', expanded: false, theme: button_theme, hide: false},
+            {name: 'activity',role: 'button', expanded: false, theme: button_theme, hide: false}
+        ] 
+        const plans_option =  [
+            {name: 'plan-list', role: 'switch', expanded: true, checked: true, theme: switch_theme},
+            {name: 'map', role: 'switch', expanded: true, checked: true, theme: switch_theme},
+            {name: 'linechart', role: 'switch', expanded: true, checked: true, theme: switch_theme},
+        ]
+        const search_option = [
+            {name: 'search', role: 'button', expanded: false, theme: button_theme},
+            {name: 'sort-up', role: 'switch', expanded: false, checked: false, theme: switch_theme},
+            {name: 'sort-down', role: 'switch', expanded: false, checked: true, theme: switch_theme},
+            {name: 'filter', role: 'button', expanded: false, theme: button_theme},
+        ]
+            
+        const plan_option = [
+            {name: 'play', role: 'switch', expanded: false, checked: true, theme: switch_theme},
+            {name: 'pause', role: 'switch', expanded: false, checked: false, theme: switch_theme},
+            {name: 'edit', role: 'button', expanded: false, theme: button_theme},
+            {name: 'trash', role: 'button', expanded: false, theme: button_theme}
+        ]
         
-        make_buttons({opt: main_option, target: main_action})
-        make_buttons({opt: settings_option, target: settings_action})
-        make_buttons({opt: plans_option, target: plans_action})
-        make_buttons({opt: search_option, target: search_action})
+        const settings_option = [
+            {name: 'action', role: 'button', expanded: false, checked: false, theme: button_theme},
+            {name: 'help', role: 'button', expanded: false, checked: false, theme: button_theme}
+        ]
+        
+        make_buttons({args: main_option, target: main_action})
+        make_buttons({args: settings_option, target: settings_action})
+        make_buttons({args: plans_option, target: plans_action})
+        make_buttons({args: search_option, target: search_action})
         // only display when click plan
         
         // console.log(first_action, second_action)
@@ -2401,14 +2375,14 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             }
         })
 
-        
         return el
       
-        function make_buttons ({opt, target}) {
-            opt.items.forEach( obj => {
+        function make_buttons ({args, target}) {
+            args.forEach( obj => {
                 if (obj.hide) return
                 if (obj.checked) var checked = {checked: obj.checked}
-                const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, ...checked, theme: opt.theme}, actions_protocol(obj.name))
+                const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, ...checked, theme: obj.theme}, actions_protocol(obj.name))
+                button.setAttribute('aria-expanded', obj.expanded)
                 if (obj.name === 'activity') {
                     box.append(button)
                     return target.append(box)
