@@ -1,5 +1,3 @@
-const bel = require('bel')
-const csjs = require('csjs-inject')
 const make_grid = require('make-grid')
 const message_maker = require('message-maker')
 const make_element = require('make-element')
@@ -41,8 +39,6 @@ function wallet () {
   function widget () {
     const recipients = []
     const make = message_maker('datdot-wallet')
-    const css = style
-    // const el = bel`<main class=${css.wrap}></main>`
     const el = make_element({name: 'main', classlist: 'wrap'})
     const shadow = el.attachShadow({mode: 'closed'})
     const container = i_container({name: 'wallet-container'}, protocol('wallet-container'))

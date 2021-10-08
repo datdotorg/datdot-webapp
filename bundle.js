@@ -2146,8 +2146,6 @@ module.exports = function (css, options) {
 };
 
 },{}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/datdot-wallet.js":[function(require,module,exports){
-const bel = require('bel')
-const csjs = require('csjs-inject')
 const make_grid = require('make-grid')
 const message_maker = require('message-maker')
 const make_element = require('make-element')
@@ -2189,8 +2187,6 @@ function wallet () {
   function widget () {
     const recipients = []
     const make = message_maker('datdot-wallet')
-    const css = style
-    // const el = bel`<main class=${css.wrap}></main>`
     const el = make_element({name: 'main', classlist: 'wrap'})
     const shadow = el.attachShadow({mode: 'closed'})
     const container = i_container({name: 'wallet-container'}, protocol('wallet-container'))
@@ -2233,7 +2229,7 @@ function wallet () {
   `
   return widget()
 }
-},{"bel":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/browser.js","container":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/container.js","csjs-inject":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs-inject/index.js","footer":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/footer.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-actions/src/index.js":[function(require,module,exports){
+},{"container":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/container.js","footer":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/footer.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-actions/src/index.js":[function(require,module,exports){
 const style_sheet = require('support-style-sheet')
 const message_maker = require('message-maker')
 const {i_button} = require('datdot-ui-button')
@@ -2380,9 +2376,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             send(make(msg))
-            console.log(msg)
             if (type.match(/click/)) return handle_click(msg)
-            if (type.match(/load-page/)) return console.log(msg)
         }
     }
 
@@ -2533,6 +2527,7 @@ function navigation ({page = '*', flow = 'ui-navigation', to = '#', name = '.', 
 }
 },{"datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/index.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/container.js":[function(require,module,exports){
 const bel = require('bel')
+const make_element = require('make-element')
 const style_sheet = require('support-style-sheet')
 const message_maker = require('message-maker')
 
@@ -2543,9 +2538,10 @@ function i_container({page = '*', flow = 'ui-container', name, body = {}}, proto
 
     function widget () {
         const send = protocol(get)
-        const el = document.createElement('i-container')
+        const el = make_element({name: 'i-container'})
         const shadow = el.attachShadow({mode: 'open'})
-        const content = bel`<section class="content"><h1>Datdot wallet</h1></section>`
+        const content = make_element({name: 'section', classlist: 'content'})
+        content.append(bel`<h1>DatDot wallet</h1>`)
         // !important style_sheet must be implemented before shadow 
         // For Safari and Firefox cannot implement shadow before style
         style_sheet(shadow, style)
@@ -2574,9 +2570,10 @@ function i_container({page = '*', flow = 'ui-container', name, body = {}}, proto
     return widget()
 }
 
-},{"bel":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/browser.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/footer.js":[function(require,module,exports){
-const bel = require('bel')
+},{"bel":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/browser.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/footer.js":[function(require,module,exports){
 const message_maker = require('message-maker')
+const make_element = require('make-element')
+const style_sheet = require('support-style-sheet')
 // widgets
 const i_nav = require('components/datdot-ui-navigation/src')
 const i_actions = require('components/datdot-ui-actions/src')
@@ -2590,11 +2587,13 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
     
     function widget () {
         const send = protocol(get)
-        const el = bel`
-        <footer>
-            ${i_actions({name: `${name}-actions`, status}, footer_protocol(`${name}-actions`) )}
-            ${i_nav({name: `${name}-nav`, body: nav, to}, footer_protocol(`${name}-nav`))}
-        </footer>`
+        const sub_actions = make_element({name: 'div', classlist: 'sub-actions'})
+        const el = make_element({name: 'footer', classlist: 'footer'})
+        const shadow = el.attachShadow({mode: 'closed'})
+        const actions = i_actions( {name: `${name}-actions`, status}, footer_protocol(`${name}-actions`) )
+        const navigtaion = i_nav( {name: `${name}-nav`, body: nav, to}, footer_protocol(`${name}-nav`) )
+        style_sheet(el, style)
+        shadow.append(actions, navigtaion)
 
         return el
 
@@ -2611,10 +2610,11 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
         }
     }
     
+    const style = ``
 
     return widget()
 }
-},{"bel":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/browser.js","components/datdot-ui-actions/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-actions/src/index.js","components/datdot-ui-navigation/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-navigation/src/index.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js":[function(require,module,exports){
+},{"components/datdot-ui-actions/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-actions/src/index.js","components/datdot-ui-navigation/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-navigation/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js":[function(require,module,exports){
 module.exports = make_element
 
 function make_element({name = '', classlist = null, role = undefined }) {
