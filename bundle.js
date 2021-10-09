@@ -1438,6 +1438,9 @@ function i_button (opt, protocol) {
         --color: ${current_color ? current_color : 'var(--current-color)'};
         --bg-color: ${current_bg_color ? current_bg_color : 'var(--current-bg-color)'};
     }
+    :host(i-button[aria-current="true"]) g {
+        --icon-fill: ${current_icon_fill ? current_icon_fill : 'var(--current-icon-fill)'}
+    }
     :host(i-button[aria-current="true"]:focus) {
         --color: var(--color-focus);
         --bg-color: var(--bg-color-focus);
@@ -2301,11 +2304,17 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         const activities_event = make_element({name: 'span', classlist: 'badge'})
         const box = make_element({name: 'div', classlist: 'activities'})
         const button_theme = {
+            style: `
+                :host(i-button[aria-expanded="true"]) {
+                    border-bottom: 2px solid hsl(var(--color-black));
+                }
+            `,
             props: {
                 border_radius: '0',
                 icon_fill: 'var(--color-black)',
                 icon_fill_hover: 'var(--color-black)',
                 bg_color_hover: 'var(--color-greyED)',
+                bg_color_current: 'var(--color-greyA2)'
             }
         }
         const switch_theme = {
@@ -2407,33 +2416,33 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         }
 
         function handle_switch (from, {checked, current, expanded}) {
-            if (from.match(/sort/)) {
-                const not_switched = make({type: 'switched', data: {checked}})
-                const collapsed = make({type: 'collapsed', data: expanded})
-                const not_current = make({type: 'current', data: current})
-                if (from === 'sort-up') {
-                    recipients['sort-down'](not_switched)
-                    recipients['sort-down'](collapsed)
-                    recipients['sort-down'](not_current)
-                }
-                if (from === 'sort-down') {
-                    recipients['sort-up'](not_switched)
-                    recipients['sort-up'](collapsed)
-                    recipients['sort-up'](not_current)
-                }
-            }
+            // if (from.match(/sort/)) {
+            //     const not_switched = make({type: 'switched', data: {checked}})
+            //     const collapsed = make({type: 'collapsed', data: expanded})
+            //     const not_current = make({type: 'current', data: current})
+            //     if (from === 'sort-up') {
+            //         recipients['sort-down'](not_switched)
+            //         recipients['sort-down'](collapsed)
+            //         recipients['sort-down'](not_current)
+            //     }
+            //     if (from === 'sort-down') {
+            //         recipients['sort-up'](not_switched)
+            //         recipients['sort-up'](collapsed)
+            //         recipients['sort-up'](not_current)
+            //     }
+            // }
             recipients[from](make({type: 'switched', data: {checked: !checked}}))
-            recipients[from](make({type: 'expanded', data: !expanded}))
+            // recipients[from](make({type: 'expanded', data: !expanded}))
             
         }
 
         function handle_current (from, {current}) {
-            const is_current = !current
-            recipients[from](make({type: 'current', data: is_current}))
-            for (key in recipients) {
+            recipients[from](make({type: 'current', data: !current}))
+            
+            Object.entries(recipients).forEach(([key, value]) => {
                 if (key === from) return
                 recipients[key](make({type: 'current', data: current}))
-            }
+            })       
         }
 
         function handle_click (msg) {
@@ -2442,8 +2451,6 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             const role = head[0].split(' / ')[1]
             
             if (data.current !== undefined) handle_current(from, data)
-            
-            // recipients[from](make({type, data}))
             if (role === 'switch') return handle_switch(from, data)
         }
 
