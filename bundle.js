@@ -1063,7 +1063,7 @@ function i_button (opt, protocol) {
         }
         // dropdown menu
         function expanded_event (data) {
-            is_expanded = !data
+            is_expanded = data
             set_attr({aria: 'expanded', prop: is_expanded})
         }
         // tab selected
@@ -1157,15 +1157,21 @@ function i_button (opt, protocol) {
         // protocol get msg
         function get (msg) {
             const { head, refs, type, data } = msg
+            const from = head[0].split(' / ')[0]
             // toggle
             if (type.match(/switched/)) return switched_event(data)
             // dropdown
-            if (type.match(/expanded|collapsed/)) return expanded_event(!data)
+            if (type.match(/expanded|collapsed/)) expanded_event(data)
             // tab, checkbox
             if (type.match(/tab-selected/)) return tab_selected_event(data)
             // option
             if (type.match(/selected|unselected/)) return list_selected_event(data)
             if (type.match(/changed/)) return changed_event(data)
+            if (type.match(/current/)) {
+                console.log(from, type, data)
+                is_current = data
+                return set_attr({aria: 'current', prop: is_current})
+            }
         }
     }
    
@@ -2400,12 +2406,25 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             })
         }
 
-        function handle_switch (from, {checked}) {
+        function handle_switch (from, {checked, current, expanded}) {
             if (from.match(/sort/)) {
-                if (from === 'sort-up') recipients['sort-down'](make({type: 'switched', data: {checked}}))
-                if (from === 'sort-down') recipients['sort-up'](make({type: 'switched', data: {checked}}))
+                const not_switched = make({type: 'switched', data: {checked}})
+                const collapsed = make({type: 'collapsed', data: expanded})
+                const not_current = make({type: 'current', data: current})
+                if (from === 'sort-up') {
+                    recipients['sort-down'](not_switched)
+                    recipients['sort-down'](collapsed)
+                    recipients['sort-down'](not_current)
+                }
+                if (from === 'sort-down') {
+                    recipients['sort-up'](not_switched)
+                    recipients['sort-down'](collapsed)
+                    recipients['sort-down'](not_current)
+                }
             }
             recipients[from](make({type: 'switched', data: {checked: !checked}}))
+            recipients[from](make({type: 'expanded', data: !expanded}))
+            recipients[from](make({type: 'current', data: !current}))
         }
 
         function handle_click (msg) {
