@@ -2424,15 +2424,27 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             }
             recipients[from](make({type: 'switched', data: {checked: !checked}}))
             recipients[from](make({type: 'expanded', data: !expanded}))
-            recipients[from](make({type: 'current', data: !current}))
+            
+        }
+
+        function handle_current (from, {current}) {
+            const is_current = !current
+            recipients[from](make({type: 'current', data: is_current}))
+            for (key in recipients) {
+                if (key === from) return
+                recipients[key](make({type: 'current', data: current}))
+            }
         }
 
         function handle_click (msg) {
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             const role = head[0].split(' / ')[1]
+            
+            if (data.current !== undefined) handle_current(from, data)
+            
+            // recipients[from](make({type, data}))
             if (role === 'switch') return handle_switch(from, data)
-            recipients[from](make({type, data}))
         }
 
         function actions_protocol (name) {
