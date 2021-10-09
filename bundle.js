@@ -980,10 +980,8 @@ function i_button (opt, protocol) {
     let is_checked = checked
     let is_disabled = disabled
     let is_selected = selected
-    let is_expanded = expanded
+    let is_expanded = 'expanded' in opt ? expanded : void 0
 
-    document.body.addEventListener("touchstart",function(){ });
-    
     function widget () {
         const send = protocol(get)
         const make = message_maker(`${name} / ${role} / ${flow} / ${page}`)
@@ -1138,18 +1136,23 @@ function i_button (opt, protocol) {
         function handle_click () {
             if (is_current) return
             const type = 'click'
-            const expanded = 'expanded' in opt ? is_expanded : void 0
-            if (role === 'tab') return send( make({type, data: {selected: true, current: true, controls: el.getAttribute('aria-controls'), expanded }}) )
-            if (role === 'switch') return send( make({type, data: {checked: is_checked, current: !current, expanded }}) )
+            if (role === 'tab') {
+                is_selected = !is_selected
+                is_current = !is_current
+                return send( make({type, data: {page: name, selected: is_selected, current: is_current, controls: el.getAttribute('aria-controls')}}) )
+            }
+            if (role === 'switch') {
+                return send( make({type, data: {name, checked: is_checked, current: is_current, expanded: is_expanded}}) )
+            }
             if (role === 'listbox') {
                 is_expanded = !is_expanded
-                return send( make({type, data: {expanded: is_expanded, current: !current}}))
+                return send( make({type, data: {name, expanded: is_expanded, current: is_current}}))
             }
             if (role === 'option') {
                 is_selected = !is_selected
-                return send( make({type, data: {selected: is_selected, content: is_selected ? {text: body, cover, icon} : '' }}) )
+                return send( make({type, data: {name, selected: is_selected, current: is_current, content: is_selected ? {text: body, cover, icon} : '' }}) )
             }
-            if (role === 'button') return send( make({type, data: {current: is_current, expanded}}) )
+            if (role === 'button') return send( make({type, data: {name, current: is_current, expanded}}) )
         }
         // protocol get msg
         function get (msg) {
@@ -2654,6 +2657,9 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
             console.log(from, data)
         }
 
+        // function handle_page_switch (from, {selected, current}) {
+        //     console.log(selected, current)
+        // }
         function footer_protocol (name) {
             return send => {
                 recipients[name] = send
@@ -2664,7 +2670,7 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             send(make(msg))
-            // console.log(msg)
+            // if (type === 'tab-selected') return handle_page_switch(from, data)
         }
     }
     
