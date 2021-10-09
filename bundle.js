@@ -1059,9 +1059,12 @@ function i_button (opt, protocol) {
             if (!is_checked) return el.removeAttribute('aria-checked')
             set_attr({aria: 'checked', prop: is_checked})
         }
-        // dropdown menu
         function expanded_event (data) {
             is_expanded = data
+            set_attr({aria: 'expanded', prop: is_expanded})
+        }
+        function collapsed_event (data) {
+            is_expanded = false
             set_attr({aria: 'expanded', prop: is_expanded})
         }
         // tab selected
@@ -1132,9 +1135,9 @@ function i_button (opt, protocol) {
 
         // button click
         function handle_click () {
-            if (is_current) return
             const type = 'click'
             if (role === 'tab') {
+                if (is_current) return
                 is_selected = !is_selected
                 is_current = !is_current
                 return send( make({type, data: {page: name, selected: is_selected, current: is_current, controls: el.getAttribute('aria-controls')}}) )
@@ -1150,7 +1153,7 @@ function i_button (opt, protocol) {
                 is_selected = !is_selected
                 return send( make({type, data: {name, selected: is_selected, current: is_current, content: is_selected ? {text: body, cover, icon} : '' }}) )
             }
-            if (role === 'button') return send( make({type, data: {name, current: is_current, expanded}}) )
+            if (role === 'button') return send( make({type, data: {name, current: is_current, expanded: is_expanded}}) )
         }
         // protocol get msg
         function get (msg) {
@@ -1159,7 +1162,8 @@ function i_button (opt, protocol) {
             // toggle
             if (type.match(/switched/)) return switched_event(data)
             // dropdown
-            if (type.match(/expanded|collapsed/)) expanded_event(data)
+            if (type.match(/expanded/)) return expanded_event(data)
+            if (type.match(/collapsed/)) return collapsed_event(data)
             // tab, checkbox
             if (type.match(/tab-selected/)) return tab_selected_event(data)
             // option
@@ -2305,9 +2309,13 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         const box = make_element({name: 'div', classlist: 'activities'})
         const button_theme = {
             style: `
-                :host(i-button[aria-expanded="true"]) {
-                    border-bottom: 2px solid hsl(var(--color-black));
-                }
+            :host(i-button[aria-current="true"][aria-expanded="true"]) g {
+                --icon-fill: var(--color-black);
+            }
+            :host(i-button[aria-expanded="true"]) {
+                --bg-color: var(--color-white);
+                border-bottom: 2px solid hsl(var(--color-black));
+            }
             `,
             props: {
                 border_radius: '0',
@@ -2319,18 +2327,22 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         }
         const switch_theme = {
             style: `
-                :host(i-button[aria-checked="true"]) {
-                    --bg-color: transparent;
-                }
-                :host(i-button[aria-checked="true"]) .icon g {
-                    --icon-fill: var(--color-black);
-                }
-                :host(i-button[aria-checked="false"]) .icon g {
-                    --icon-fill: var(--color-greyA2);
-                }
-                :host(i-button[aria-current="true"]) {
-                    --bg-color: var(--color-greyA2);
-                }
+            :host(i-button[aria-expanded="true"]) {
+                background-color: transparent;
+                border-bottom: 2px solid hsl(var(--color-black));
+            }
+            :host(i-button[aria-checked="true"]) {
+                --bg-color: transparent;
+            }
+            :host(i-button[aria-checked="true"]) .icon g {
+                --icon-fill: var(--color-black);
+            }
+            :host(i-button[aria-checked="false"]) .icon g {
+                --icon-fill: var(--color-greyA2);
+            }
+            :host(i-button[aria-current="true"]) {
+                --bg-color: var(--color-greyA2);
+            }
             `,
             props: {
                 border_radius: '0',
@@ -2436,13 +2448,20 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             
         }
 
-        function handle_current (from, {current}) {
-            recipients[from](make({type: 'current', data: !current}))
-            
+        function handle_current (from, {current, expanded}) {
+            recipients[from](make({type: 'current', data: current === false ? !current : current}))
+            // recipients[from](make({type: 'expanded', data: !expanded}))
+
             Object.entries(recipients).forEach(([key, value]) => {
                 if (key === from) return
-                recipients[key](make({type: 'current', data: current}))
+                recipients[key](make({type: 'current', data: current ? !current : current}))
+                if (!key.match(/activity|planlist|linechart/)) return
             })       
+        }
+
+        function handle_expanded (from, {expanded}) {
+            const type = expanded === false ? 'expanded' : 'collasped'
+            recipients[from](make({type, data: !expanded}))
         }
 
         function handle_click (msg) {
@@ -2452,6 +2471,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             
             if (data.current !== undefined) handle_current(from, data)
             if (role === 'switch') return handle_switch(from, data)
+            if (role === 'button') return handle_expanded(from, data)
         }
 
         function actions_protocol (name) {
@@ -2498,9 +2518,6 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
     }
     .activities {
         position: relative;
-    }
-    i-button[aria-expanded="true"] {
-        border-bottom: 2px solid hsl(var(--color-black));
     }
     i-button[aria-label="activity"] {
         ${make_grid({
