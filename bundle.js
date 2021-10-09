@@ -1029,12 +1029,11 @@ function i_button (opt, protocol) {
                 is_selected = is_current
                 set_attr({aria: 'selected', prop: is_selected})
             }
-            if (is_expanded) {
-                set_attr({aria: 'selected', prop: is_expanded})
+            if ('expanded' in opt) {
+                set_attr({aria: 'expanded', prop: is_expanded})
             }
             // make current status
             if ('current' in opt) set_attr({aria: 'current', prop: is_current})
-            if ('expanded' in opt) set_attr({aria: 'expanded', prop: is_expanded})
         }
 
         function set_attr ({aria, prop}) {
@@ -1139,18 +1138,18 @@ function i_button (opt, protocol) {
         function handle_click () {
             if (is_current) return
             const type = 'click'
-            if (role === 'button' && 'current' in opt) return 
-            if (role === 'tab') return send( make({type, data: {selected: true, current: true, controls: el.getAttribute('aria-controls')}}) )
-            if (role === 'switch') return send( make({type, data: {checked: is_checked, current: !current}}) )
+            const expanded = 'expanded' in opt ? is_expanded : void 0
+            if (role === 'tab') return send( make({type, data: {selected: true, current: true, controls: el.getAttribute('aria-controls'), expanded }}) )
+            if (role === 'switch') return send( make({type, data: {checked: is_checked, current: !current, expanded }}) )
             if (role === 'listbox') {
                 is_expanded = !is_expanded
-                return send( make({type, data: {expanded: is_expanded, current: !current}}) )
+                return send( make({type, data: {expanded: is_expanded, current: !current}}))
             }
             if (role === 'option') {
                 is_selected = !is_selected
                 return send( make({type, data: {selected: is_selected, content: is_selected ? {text: body, cover, icon} : '' }}) )
             }
-            if (role === 'button') return send( make({type, data: {current: is_current}}) )
+            if (role === 'button') return send( make({type, data: {current: is_current, expanded}}) )
         }
         // protocol get msg
         function get (msg) {
@@ -2386,10 +2385,11 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             args.forEach( obj => {
                 if (obj.hide) return
                 if (obj.checked) var checked = {checked: obj.checked}
-                const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, ...checked, theme: obj.theme}, actions_protocol(obj.name))
-                if ('expanded' in obj) button.setAttribute('aria-expanded', obj.expanded)
+                if ('expanded' in obj) var expanded = {expanded: obj.expanded}
+                const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, ...checked, ...expanded, theme: obj.theme}, actions_protocol(obj.name))
+                // if ('expanded' in obj) button.setAttribute('aria-expanded', obj.expanded)
                 if (obj.name === 'activity') {
-                    const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, ...checked, controls: 'wallet-container', theme: obj.theme}, actions_protocol(obj.name))
+                    const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, ...checked, ...expanded, controls: 'wallet-container', theme: obj.theme}, actions_protocol(obj.name))
                     box.append(button)
                     return target.append(box)
                 }
@@ -2409,6 +2409,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             const role = head[0].split(' / ')[1]
+            console.log(data)
             if (role === 'switch') return handle_switch(from, data)
             recipients[from](make({type, data}))
         }
@@ -2558,6 +2559,7 @@ function navigation ({page = '*', flow = 'ui-navigation', to = '#', name = '.', 
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             send(make(msg))
+            console.log(msg)
             if (type.match(/ready/)) return
             if (type.match(/click/)) return handle_page_event(from, data)
         }
@@ -2648,6 +2650,10 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
 
         return el
 
+        function handle_actions_event (from, data) {
+            console.log(from, data)
+        }
+
         function footer_protocol (name) {
             return send => {
                 recipients[name] = send
@@ -2658,7 +2664,7 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             send(make(msg))
-            console.log(msg)
+            // console.log(msg)
         }
     }
     
