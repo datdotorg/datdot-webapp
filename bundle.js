@@ -1054,12 +1054,10 @@ function i_button (opt, protocol) {
 
         // toggle
         function switched_event (data) {
-            const {checked, current} = data
+            const {checked} = data
             is_checked = checked
-            is_current = current
             if (!is_checked) return el.removeAttribute('aria-checked')
             set_attr({aria: 'checked', prop: is_checked})
-            if (current) set_attr({aria: 'current', prop: is_current})
         }
         // dropdown menu
         function expanded_event (data) {
@@ -1167,8 +1165,7 @@ function i_button (opt, protocol) {
             // option
             if (type.match(/selected|unselected/)) return list_selected_event(data)
             if (type.match(/changed/)) return changed_event(data)
-            if (type.match(/current/)) {
-                console.log(from, type, data)
+            if (type === 'current') {
                 is_current = data
                 return set_attr({aria: 'current', prop: is_current})
             }
@@ -2314,13 +2311,16 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         const switch_theme = {
             style: `
                 :host(i-button[aria-checked="true"]) {
-                    background-color: transparent;
+                    --bg-color: transparent;
                 }
                 :host(i-button[aria-checked="true"]) .icon g {
                     --icon-fill: var(--color-black);
                 }
                 :host(i-button[aria-checked="false"]) .icon g {
                     --icon-fill: var(--color-greyA2);
+                }
+                :host(i-button[aria-current="true"]) {
+                    --bg-color: var(--color-greyA2);
                 }
             `,
             props: {
@@ -2418,8 +2418,8 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
                 }
                 if (from === 'sort-down') {
                     recipients['sort-up'](not_switched)
-                    recipients['sort-down'](collapsed)
-                    recipients['sort-down'](not_current)
+                    recipients['sort-up'](collapsed)
+                    recipients['sort-up'](not_current)
                 }
             }
             recipients[from](make({type: 'switched', data: {checked: !checked}}))
@@ -2431,7 +2431,6 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             const role = head[0].split(' / ')[1]
-            console.log(data)
             if (role === 'switch') return handle_switch(from, data)
             recipients[from](make({type, data}))
         }
@@ -2581,7 +2580,6 @@ function navigation ({page = '*', flow = 'ui-navigation', to = '#', name = '.', 
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             send(make(msg))
-            console.log(msg)
             if (type.match(/ready/)) return
             if (type.match(/click/)) return handle_page_event(from, data)
         }
