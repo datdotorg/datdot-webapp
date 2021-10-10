@@ -1150,19 +1150,19 @@ function i_button (opt, protocol) {
             if (role === 'tab') {
                 if (is_current) return
                 is_selected = !is_selected
-                is_current = !is_current
-                return send( make({type, data: {page: name, selected: is_selected, current: is_current}}) )
+                // is_current = !is_current
+                return send( make({type, data: {page: name, selected: is_selected}}) )
             }
             if (role === 'switch') {
-                return send( make({type, data: {name, checked: is_checked, current: is_current, expanded: is_expanded}}) )
+                return send( make({type, data: {name, checked: is_checked}}) )
             }
             if (role === 'listbox') {
                 is_expanded = !is_expanded
-                return send( make({type, data: {name, expanded: is_expanded, current: is_current}}))
+                return send( make({type, data: {name, expanded: is_expanded}}))
             }
             if (role === 'option') {
                 is_selected = !is_selected
-                return send( make({type, data: {name, selected: is_selected, current: is_current, content: is_selected ? {text: body, cover, icon} : '' }}) )
+                return send( make({type, data: {name, selected: is_selected, content: is_selected ? {text: body, cover, icon} : '' }}) )
             }
         }
         // protocol get msg
@@ -1289,6 +1289,7 @@ function i_button (opt, protocol) {
         --avatar-width: ${avatar_width ? avatar_width : 'var(--primary-avatar-width)'};
         --avatar-height: ${avatar_height ? avatar_height : 'var(--primary-avatar-height)'};
         --avatar-radius: ${avatar_radius ? avatar_radius : 'var(--primary-avatar-radius)'};
+        --current-icon-fill: ${current_icon_fill ? current_icon_fill : 'var(--current-icon-fill)'};
         display: inline-grid;
         ${grid.button ? make_grid(grid.button) : make_grid({auto: {auto_flow: 'column'}, gap: '5px', justify: 'content-center', align: 'items-center'})}
         ${width && 'width: var(--width);'};
@@ -1453,7 +1454,7 @@ function i_button (opt, protocol) {
         --bg-color: ${current_bg_color ? current_bg_color : 'var(--current-bg-color)'};
     }
     :host(i-button[aria-current="true"]) g {
-        --icon-fill: ${current_icon_fill ? current_icon_fill : 'var(--current-icon-fill)'}
+        --icon-fill: var(--current-icon-fill);
     }
     :host(i-button[aria-current="true"]:focus) {
         --color: var(--color-focus);
@@ -1465,7 +1466,7 @@ function i_button (opt, protocol) {
     }
     :host(i-button[role="option"][aria-current="true"][aria-selected="true"]) .option > .icon g,
     :host(i-button[role="option"][aria-current="true"][aria-selected="true"]:hover) .option > .icon g {
-        --icon-fill: ${current_icon_fill ? current_icon_fill : 'var(--current-icon-fill)'};
+        --icon-fill: var(--current-icon-fill);
     }
     :host(i-button[aria-checked="true"]), :host(i-button[aria-expanded="true"]),
     :host(i-button[aria-checked="true"]:hover), :host(i-button[aria-expanded="true"]:hover) {
@@ -1473,6 +1474,9 @@ function i_button (opt, protocol) {
         --weight: ${current_weight ? current_weight : 'var(--current-weight)'};
         --color: ${current_color ? current_color : 'var(--current-color)'};
         --bg-color: ${current_bg_color ? current_bg_color : 'var(--current-bg-color)'};
+    }
+    :host(i-button[role="switch"][aria-expanded="true"]) g {
+        --icon-fill: var(--current-icon-fill);
     }
     /* listbox collapsed */
     :host(i-button[role="listbox"]) > .icon {
@@ -2319,9 +2323,9 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         const box = make_element({name: 'div', classlist: 'activities'})
         const button_theme = {
             style: `
-            :host(i-button[aria-current="true"][aria-expanded="true"]) g {
-                --icon-fill: var(--color-black);
-            }
+            :host(i-button[aria-current="true"]) g, :host(i-button[aria-expanded="true"]) g {
+                --icon-fill: var(--color-flame);
+            }   
             :host(i-button[aria-expanded="true"]) {
                 --bg-color: var(--color-white);
                 border-bottom: 2px solid hsl(var(--color-black));
@@ -2332,7 +2336,8 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
                 icon_fill: 'var(--color-black)',
                 icon_fill_hover: 'var(--color-black)',
                 bg_color_hover: 'var(--color-greyED)',
-                bg_color_current: 'var(--color-greyA2)'
+                current_icon_fill: 'var(--color-black)',
+                current_bg_color: 'var(--color-greyA2)'
             }
         }
         const switch_theme = {
