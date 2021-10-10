@@ -1145,13 +1145,13 @@ function i_button (opt, protocol) {
                 send( make({type, data: {name, expanded: is_expanded}}))
             }
             if (role === 'button') {
-                return send( make({type} ))
+                return send( make({type, to: controls} ))
             }
             if (role === 'tab') {
                 if (is_current) return
                 is_selected = !is_selected
                 is_current = !is_current
-                return send( make({type, data: {page: name, selected: is_selected, current: is_current, controls: el.getAttribute('aria-controls')}}) )
+                return send( make({type, data: {page: name, selected: is_selected, current: is_current}}) )
             }
             if (role === 'switch') {
                 return send( make({type, data: {name, checked: is_checked, current: is_current, expanded: is_expanded}}) )
@@ -2427,10 +2427,10 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
                 if (obj.checked) var checked = {checked: obj.checked}
                 if ('expanded' in obj) var expanded = {expanded: obj.expanded}
                 if ('current' in obj) var current = {current: obj.current}
-                const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, ...checked, ...expanded, ...current, theme: obj.theme}, actions_protocol(obj.name))
+                const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, ...checked, ...expanded, ...current, controls: obj.controls, theme: obj.theme}, actions_protocol(obj.name))
                 // if ('expanded' in obj) button.setAttribute('aria-expanded', obj.expanded)
                 if (obj.name === 'activity') {
-                    const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, ...checked, ...expanded, ...current, controls: 'wallet-container', theme: obj.theme}, actions_protocol(obj.name))
+                    const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.name}}, ...checked, ...expanded, ...current, controls: obj.controls, theme: obj.theme}, actions_protocol(obj.name))
                     box.append(button)
                     return target.append(box)
                 }
@@ -2482,6 +2482,8 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             const role = head[0].split(' / ')[1]
+            const to = head[1]
+            console.log('to:', to)
             // if (data.current !== undefined) handle_current(from, data)
             if (role === 'switch') return handle_switch(from, data)
         }
