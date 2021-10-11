@@ -1164,19 +1164,29 @@ const {i_button} = require('components/datdot-ui-button')
 module.exports = account_actions
 
 function account_actions (opt, protocol) {
-    const {page = '*', flow = 'account-action', name = '.', body = [], to = '#'} = opt
+    const {page = '*', flow = 'account-action', name = '.', body = [], expanded = undefined, to = '#'} = opt
     const recipients = []
-    
+    const make = message_maker(`${name} / ${flow} / ${page}`)
+    const is_expanded = expanded
+    console.log(expanded)
+
     function widget () {
         const send = protocol(get)
         const el = make_element({name: 'div', classlist: 'sub-action account'})
-        const title = make_element({name: 'h1'})
+        const title = make_element({name: 'h5'})
         const shadow = el.attachShadow({mode: 'closed'})
         style_sheet(shadow, style)
-        title.textContent = 'hello'
+        title.textContent = 'account actions'
         shadow.append(title)
+        send( make({type: 'ready'}) )
+
+        if (is_expanded) set_attr({aria: 'expanded', prop: is_expanded})
+
         return el
 
+        function set_attr ({aria, prop}) {
+            el.setAttribute(`aria-${aria}`, prop)
+        }
         function action_protocol (name) {
             return send => {
                 recipients[name] = send
@@ -2794,11 +2804,15 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
         return el
 
         function handle_collapsed_action_event({name, expanded}) {
-            console.log(name)
+            // console.log(name)
             // sub_actions.innerHTML = ''
         }
         function handle_expanded_action_event ({name, expanded}) {
-            if (name === 'account') return shadow.insertBefore(account_action(), actions)
+            if (name === 'account') {
+                const account = account_action({name: `${name}-action`, expanded}, footer_protocol(`${name}-action`))
+                shadow.insertBefore(account, actions)
+                return
+            }
         }
         function footer_protocol (name) {
             return send => {
@@ -2810,8 +2824,7 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             const to = head[1]
-            send(make(msg))
-            // console.log(data)
+            if (type.match(/ready/)) return send(make(msg))
             if (type.match(/click/)) return 
             if (type.match(/expanded/)) return handle_expanded_action_event({name: from, expanded: data.expanded})
             if (type.match(/collapsed/)) return handle_collapsed_action_event({name: from, expanded: data.expanded})
