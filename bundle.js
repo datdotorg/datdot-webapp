@@ -1161,9 +1161,9 @@ const make_grid = require('make-grid')
 const make_element = require('make-element')
 const {i_button} = require('components/datdot-ui-button')
 
-module.exports = account_actions
+module.exports = account_action
 
-function account_actions (opt, protocol) {
+function account_action (opt, protocol) {
     const {page = '*', flow = 'account-action', name = '.', body = [], hide = true, to = '#'} = opt
     const recipients = []
     const make = message_maker(`${name} / ${flow} / ${page}`)
@@ -1175,9 +1175,9 @@ function account_actions (opt, protocol) {
         const title = make_element({name: 'h5'})
         const shadow = el.attachShadow({mode: 'closed'})
         style_sheet(shadow, style)
-        title.textContent = 'account actions'
+        title.textContent = 'account action'
         shadow.append(title)
-        el.setAttribute('aria-hidden', is_hidden)
+        set_attr({aria: 'hidden', prop: is_hidden})
         send( make({type: 'ready'}) )
         return el
 
@@ -1185,9 +1185,8 @@ function account_actions (opt, protocol) {
             return el.setAttribute(`aria-${aria}`, prop)
         }
         function handle_hide ({hide}) {
-            console.log(hide)
             is_hidden = hide
-            el.setAttribute('aria-hidden', is_hidden)
+            set_attr({aria: 'hidden', prop: is_hidden})
         }
 
         function action_protocol (name) {
@@ -1216,10 +1215,9 @@ function account_actions (opt, protocol) {
         border-top: var(--border-width) var(--border-style) hsl(var(--color-black));
     }
     :host(.sub-action[aria-hidden="true"]) {
-        visibility: hidden;
+        display: none;
     }
     :host(.sub-action[aria-hidden="false"]) {
-        visibility: visible;
     }
     `
 
@@ -1390,7 +1388,8 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             })
         }
 
-        function handle_switch (from, {checked}) {
+        function handle_switch ({from, to, data}) {
+            const checked = data.checked
             const make = message_maker(`${from} / ${flow} / ${page}`)
             if (from.match(/sort/)) {
                 const not_switched = make({type: 'switched', data: {checked}})
@@ -1399,10 +1398,12 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             }
             recipients[from](make({type: 'switched', data: {checked: !checked}}))
         }
-        function handle_expanded (from, {expanded}) {
+        function handle_expanded (from, to, {expanded}) {
             const make = message_maker(`${from} / ${flow} / ${page}`)
             if (from.match(/plan-list|map|linechart/)) {
-                return recipients[from](make({type: 'expanded', data: !expanded}))
+                const message = {type: 'expanded', data: !expanded}
+                recipients[from](make(message))
+                return send(make({to, ...message}))
             }
             Object.keys(recipients).forEach( key => {
                 if (key === from) {
@@ -1415,7 +1416,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
                 }
             }) 
         }
-        function handle_collapsed (from, {expanded}) {
+        function handle_collapsed (from, to, {expanded}) {
             const make = message_maker(`${from} / ${flow} / ${page}`)
             const message = {type: 'collapsed', data: !expanded}
             recipients[from](make(message))
@@ -1437,7 +1438,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             const make = message_maker(`${from} / ${flow} / ${page}`)
             const to = head[1]
             if (to) return send(make(msg))
-            if (role === 'switch') return handle_switch(from, data)
+            if (role === 'switch') return handle_switch({from, to, data})
         }
         function actions_protocol (name) {
             return send => {
@@ -1452,8 +1453,8 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             const make = message_maker(`${from} / ${flow} / ${page}`)
             if (type.match(/ready/)) return send(make(msg))
             if (type.match(/click/)) return handle_click(msg)
-            if (type.match(/expanded/)) return handle_expanded(from, data)
-            if (type.match(/collapsed/)) return handle_collapsed(from, data)
+            if (type.match(/expanded/)) return handle_expanded(from, to, data)
+            if (type.match(/collapsed/)) return handle_collapsed(from, to, data)
             if (type.match(/current/)) return handle_current(data)
         }
     }
@@ -2804,6 +2805,7 @@ const i_nav = require('components/datdot-ui-navigation/src')
 const i_actions = require('components/datdot-ui-actions/src')
 // call actions
 const account_action = require('./account-action')
+const search_action = require('./search-action')
 
 module.exports = i_footer
 function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = '#'}, protocol) {
@@ -2823,13 +2825,13 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
         return el
 
         function handle_close_action_event({type, name, hide}) {
-            // sub_actions.innerHTML = ''
             Object.keys(recipients).forEach( key => {
                 const regex = new RegExp(`${name}`)
                 if (key.match(regex)) return recipients[`${name}-action`](make({type, data: {hide: !hide}}))
             })
         }
         function handle_open_action_event ({name, type, hide}) {
+            // check sub-action existed
             if (shadow.querySelector(`.sub-action.${name}`)) {
                 Object.keys(recipients).forEach( key => {
                     const regex = new RegExp(`${name}`)
@@ -2837,11 +2839,20 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
                 })
                 return 
             }
-            if (name === 'account') {
-                const account = account_action({name: `${name}-action`, hide: !hide}, footer_protocol(`${name}-action`))
-                shadow.insertBefore(account, actions)
-                return
+            // check other sub-action existed and do deleted
+            const sub_actions = shadow.querySelectorAll(`.sub-action`)
+            if (name === 'account') var sub_action = account_action({name: `${name}-action`, hide: !hide}, footer_protocol(`${name}-action`))
+            if (name === 'search') var sub_action = search_action({name: `${name}-action`, hide: !hide}, footer_protocol(`${name}-action`))
+            
+            shadow.insertBefore(sub_action, actions)
+
+            if (sub_actions.length > 0) {
+                sub_actions.forEach( action => {
+                    shadow.removeChild(action)
+                })
             }
+            
+            return
         }
         function footer_protocol (name) {
             return send => {
@@ -2865,7 +2876,7 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
 
     return widget()
 }
-},{"./account-action":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/account-action.js","components/datdot-ui-actions/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-actions/src/index.js","components/datdot-ui-navigation/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-navigation/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js":[function(require,module,exports){
+},{"./account-action":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/account-action.js","./search-action":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/search-action.js","components/datdot-ui-actions/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-actions/src/index.js","components/datdot-ui-navigation/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-navigation/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js":[function(require,module,exports){
 module.exports = make_element
 
 function make_element({name = '', classlist = null, role = undefined }) {
@@ -2892,7 +2903,76 @@ function make_element({name = '', classlist = null, role = undefined }) {
 arguments[4]["/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-button/src/node_modules/make-grid.js"][0].apply(exports,arguments)
 },{}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js":[function(require,module,exports){
 arguments[4]["/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-button/src/node_modules/message-maker.js"][0].apply(exports,arguments)
-},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js":[function(require,module,exports){
+},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/search-action.js":[function(require,module,exports){
+const style_sheet = require('support-style-sheet')
+const message_maker = require('message-maker')
+const make_grid = require('make-grid')
+const make_element = require('make-element')
+const {i_button} = require('components/datdot-ui-button')
+
+module.exports = search_action
+
+function search_action (opt, protocol) {
+    const {page = '*', flow = 'search-action', name = '.', body = '', hide = true, to = '#'} = opt
+    const recipients = []
+    const make = message_maker(`${name} / ${flow} / ${page}`)
+    let is_hidden = hide
+
+    function widget () {
+        const send = protocol(get)
+        const el = make_element({name: 'div', classlist: 'sub-action search'})
+        const title = make_element({name: 'h5'})
+        const shadow = el.attachShadow({mode: 'closed'})
+        style_sheet(shadow, style)
+        title.textContent = 'search action'
+        shadow.append(title)
+        set_attr({aria: 'hidden', prop: is_hidden})
+        send( make({type: 'ready'}) )
+        return el
+
+        function set_attr ({aria, prop}) {
+            return el.setAttribute(`aria-${aria}`, prop)
+        }
+        function handle_hide ({hide}) {
+            is_hidden = hide
+            set_attr({aria: 'hidden', prop: is_hidden})
+        }
+
+        function action_protocol (name) {
+            return send => {
+                recipients[name] = send
+                return get
+            }
+        }
+        function get (msg) {
+            const {head, type, refs, meta, data} = msg
+            const from = head[0].split(' / ')[0]
+            const to = head[1]
+            if (type.match(/show|hide/)) return handle_hide(data)
+        }
+    }
+
+    const style = `
+    :host(.sub-action) {
+        --bg-color: var(--color-white);
+        --opacity: 1;
+        --border-width: 1px;
+        --border-style: solid;
+        --border-color: var(--color-black);
+        display: grid;
+        background-color: hsla(var(--bg-color), var(--opacity));
+        border-top: var(--border-width) var(--border-style) hsl(var(--color-black));
+    }
+    :host(.sub-action[aria-hidden="true"]) {
+        display: none;
+    }
+    :host(.sub-action[aria-hidden="false"]) {
+    }
+    `
+
+    return widget()
+}
+},{"components/datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-button/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js":[function(require,module,exports){
 module.exports = support_style_sheet
 function support_style_sheet (shadow, style) {
     return (() => {
