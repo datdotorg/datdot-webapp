@@ -1164,11 +1164,10 @@ const {i_button} = require('components/datdot-ui-button')
 module.exports = account_actions
 
 function account_actions (opt, protocol) {
-    const {page = '*', flow = 'account-action', name = '.', body = [], expanded = undefined, to = '#'} = opt
+    const {page = '*', flow = 'account-action', name = '.', body = [], hide = true, to = '#'} = opt
     const recipients = []
     const make = message_maker(`${name} / ${flow} / ${page}`)
-    const is_expanded = expanded
-    console.log(expanded)
+    let is_hidden = hide
 
     function widget () {
         const send = protocol(get)
@@ -1178,30 +1177,49 @@ function account_actions (opt, protocol) {
         style_sheet(shadow, style)
         title.textContent = 'account actions'
         shadow.append(title)
+        el.setAttribute('aria-hidden', is_hidden)
         send( make({type: 'ready'}) )
-
-        if (is_expanded) set_attr({aria: 'expanded', prop: is_expanded})
-
         return el
 
         function set_attr ({aria, prop}) {
-            el.setAttribute(`aria-${aria}`, prop)
+            return el.setAttribute(`aria-${aria}`, prop)
         }
+        function handle_hide ({hide}) {
+            console.log(hide)
+            is_hidden = hide
+            el.setAttribute('aria-hidden', is_hidden)
+        }
+
         function action_protocol (name) {
             return send => {
                 recipients[name] = send
                 return get
             }
         }
-
         function get (msg) {
-
+            const {head, type, refs, meta, data} = msg
+            const from = head[0].split(' / ')[0]
+            const to = head[1]
+            if (type.match(/show|hide/)) return handle_hide(data)
         }
     }
 
     const style = `
-    h1 {
-        color: hsl(var(--color-flame))
+    :host(.sub-action) {
+        --bg-color: var(--color-white);
+        --opacity: 1;
+        --border-width: 1px;
+        --border-style: solid;
+        --border-color: var(--color-black);
+        display: grid;
+        background-color: hsla(var(--bg-color), var(--opacity));
+        border-top: var(--border-width) var(--border-style) hsl(var(--color-black));
+    }
+    :host(.sub-action[aria-hidden="true"]) {
+        visibility: hidden;
+    }
+    :host(.sub-action[aria-hidden="false"]) {
+        visibility: visible;
     }
     `
 
@@ -1386,7 +1404,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             if (from.match(/plan-list|map|linechart/)) {
                 return recipients[from](make({type: 'expanded', data: !expanded}))
             }
-            Object.entries(recipients).forEach(([key, value]) => {
+            Object.keys(recipients).forEach( key => {
                 if (key === from) {
                     const message = {type: 'expanded', data: !expanded}
                     recipients[from](make(message))
@@ -1406,7 +1424,8 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         function handle_current ({name, current}) {
             if (current) return
             const make = message_maker(`${name} / ${flow} / ${page}`)
-            Object.entries(recipients).forEach(([key, value]) => {
+            
+            Object.keys(recipients).forEach(key => {
                 if (key === name) return recipients[name](make({type: 'current', data: !current}))
                 return recipients[key](make({type: 'current', data: current}))
             }) 
@@ -2803,13 +2822,23 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
 
         return el
 
-        function handle_collapsed_action_event({name, expanded}) {
-            // console.log(name)
+        function handle_close_action_event({type, name, hide}) {
             // sub_actions.innerHTML = ''
+            Object.keys(recipients).forEach( key => {
+                const regex = new RegExp(`${name}`)
+                if (key.match(regex)) return recipients[`${name}-action`](make({type, data: {hide: !hide}}))
+            })
         }
-        function handle_expanded_action_event ({name, expanded}) {
+        function handle_open_action_event ({name, type, hide}) {
+            if (shadow.querySelector(`.sub-action.${name}`)) {
+                Object.keys(recipients).forEach( key => {
+                    const regex = new RegExp(`${name}`)
+                    if (key.match(regex)) return recipients[`${name}-action`](make({type, data: {hide: !hide}}))
+                })
+                return 
+            }
             if (name === 'account') {
-                const account = account_action({name: `${name}-action`, expanded}, footer_protocol(`${name}-action`))
+                const account = account_action({name: `${name}-action`, hide: !hide}, footer_protocol(`${name}-action`))
                 shadow.insertBefore(account, actions)
                 return
             }
@@ -2826,8 +2855,8 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
             const to = head[1]
             if (type.match(/ready/)) return send(make(msg))
             if (type.match(/click/)) return 
-            if (type.match(/expanded/)) return handle_expanded_action_event({name: from, expanded: data.expanded})
-            if (type.match(/collapsed/)) return handle_collapsed_action_event({name: from, expanded: data.expanded})
+            if (type.match(/expanded/)) return handle_open_action_event({name: from, type: 'show', hide: data.expanded})
+            if (type.match(/collapsed/)) return handle_close_action_event({name: from, type: 'hide', hide: data})
             if (type.match(/tab-selected/)) return send( make({to, type: 'switch-page', data}) )
         }
     }
