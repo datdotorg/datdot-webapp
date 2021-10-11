@@ -1154,7 +1154,50 @@ function wallet () {
   `
   return widget()
 }
-},{"container":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/container.js","footer":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/footer.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-actions/src/index.js":[function(require,module,exports){
+},{"container":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/container.js","footer":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/footer.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/account-action.js":[function(require,module,exports){
+const style_sheet = require('support-style-sheet')
+const message_maker = require('message-maker')
+const make_grid = require('make-grid')
+const make_element = require('make-element')
+const {i_button} = require('components/datdot-ui-button')
+
+module.exports = account_actions
+
+function account_actions (opt, protocol) {
+    const {page = '*', flow = 'account-action', name = '.', body = [], to = '#'} = opt
+    const recipients = []
+    
+    function widget () {
+        const send = protocol(get)
+        const el = make_element({name: 'div', classlist: 'sub-action account'})
+        const title = make_element({name: 'h1'})
+        const shadow = el.attachShadow({mode: 'closed'})
+        style_sheet(shadow, style)
+        title.textContent = 'hello'
+        shadow.append(title)
+        return el
+
+        function action_protocol (name) {
+            return send => {
+                recipients[name] = send
+                return get
+            }
+        }
+
+        function get (msg) {
+
+        }
+    }
+
+    const style = `
+    h1 {
+        color: hsl(var(--color-flame))
+    }
+    `
+
+    return widget()
+}
+},{"components/datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-button/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-actions/src/index.js":[function(require,module,exports){
 const style_sheet = require('support-style-sheet')
 const message_maker = require('message-maker')
 const make_grid = require('make-grid')
@@ -1166,7 +1209,6 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
     const {activities = 0, plan = undefined} = status
 
     const recipients = []
-    const make = message_maker(`${name} / ${flow} / ${page}`)
 
     function widget () {
         const send = protocol(get)
@@ -1311,7 +1353,6 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
                 if ('expanded' in obj) var expanded = {expanded: obj.expanded}
                 if ('current' in obj) var current = {current: obj.current}
                 const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.icon}}, ...checked, ...expanded, ...current, controls: obj.controls, theme: obj.theme}, actions_protocol(obj.name))
-                // if ('expanded' in obj) button.setAttribute('aria-expanded', obj.expanded)
                 if (obj.name === 'activity') {
                     const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.icon}}, ...checked, ...expanded, ...current, controls: obj.controls, theme: obj.theme}, actions_protocol(obj.name))
                     box.append(button)
@@ -1322,6 +1363,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         }
 
         function handle_switch (from, {checked}) {
+            const make = message_maker(`${from} / ${flow} / ${page}`)
             if (from.match(/sort/)) {
                 const not_switched = make({type: 'switched', data: {checked}})
                 if (from === 'sort-up') recipients['sort-down'](not_switched)
@@ -1330,21 +1372,30 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             recipients[from](make({type: 'switched', data: {checked: !checked}}))
         }
         function handle_expanded (from, {expanded}) {
+            const make = message_maker(`${from} / ${flow} / ${page}`)
             if (from.match(/plan-list|map|linechart/)) {
                 return recipients[from](make({type: 'expanded', data: !expanded}))
             }
             Object.entries(recipients).forEach(([key, value]) => {
-                if (key === from) return recipients[from](make({type: 'expanded', data: !expanded}))
+                if (key === from) {
+                    const message = {type: 'expanded', data: !expanded}
+                    recipients[from](make(message))
+                    return send(make({type: 'expanded', data: {expanded: !expanded}}))
+                }
                 if (key.match(/account|search|sort|filter|action|help/)) {
                     return handle_collapsed(key, {expanded: !expanded})
                 }
             }) 
         }
         function handle_collapsed (from, {expanded}) {
-            recipients[from](make({type: 'collapsed', data: !expanded}))
+            const make = message_maker(`${from} / ${flow} / ${page}`)
+            const message = {type: 'collapsed', data: !expanded}
+            recipients[from](make(message))
+            return send(make({from, ...message}))
         }
         function handle_current ({name, current}) {
             if (current) return
+            const make = message_maker(`${name} / ${flow} / ${page}`)
             Object.entries(recipients).forEach(([key, value]) => {
                 if (key === name) return recipients[name](make({type: 'current', data: !current}))
                 return recipients[key](make({type: 'current', data: current}))
@@ -1354,8 +1405,9 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             const role = head[0].split(' / ')[1]
+            const make = message_maker(`${from} / ${flow} / ${page}`)
             const to = head[1]
-            if (to) return send(msg)
+            if (to) return send(make(msg))
             if (role === 'switch') return handle_switch(from, data)
         }
         function actions_protocol (name) {
@@ -1368,7 +1420,8 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             const to = head[1]
-            send(make(msg))
+            const make = message_maker(`${from} / ${flow} / ${page}`)
+            if (type.match(/ready/)) return send(make(msg))
             if (type.match(/click/)) return handle_click(msg)
             if (type.match(/expanded/)) return handle_expanded(from, data)
             if (type.match(/collapsed/)) return handle_collapsed(from, data)
@@ -2720,6 +2773,8 @@ const style_sheet = require('support-style-sheet')
 // widgets
 const i_nav = require('components/datdot-ui-navigation/src')
 const i_actions = require('components/datdot-ui-actions/src')
+// call actions
+const account_action = require('./account-action')
 
 module.exports = i_footer
 function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = '#'}, protocol) {
@@ -2729,7 +2784,6 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
     
     function widget () {
         const send = protocol(get)
-        const sub_actions = make_element({name: 'div', classlist: 'sub-actions'})
         const el = make_element({name: 'footer', classlist: 'footer'})
         const shadow = el.attachShadow({mode: 'closed'})
         const actions = i_actions( {name: `${name}-actions`, status}, footer_protocol(`${name}-actions`) )
@@ -2739,8 +2793,12 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
 
         return el
 
-        function handle_action_event ({from, to, data}) {
-            console.log({from, to, data})
+        function handle_collapsed_action_event({name, expanded}) {
+            console.log(name)
+            // sub_actions.innerHTML = ''
+        }
+        function handle_expanded_action_event ({name, expanded}) {
+            if (name === 'account') return shadow.insertBefore(account_action(), actions)
         }
         function footer_protocol (name) {
             return send => {
@@ -2754,7 +2812,9 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
             const to = head[1]
             send(make(msg))
             // console.log(data)
-            if (type.match(/click/)) return handle_action_event({from, to})
+            if (type.match(/click/)) return 
+            if (type.match(/expanded/)) return handle_expanded_action_event({name: from, expanded: data.expanded})
+            if (type.match(/collapsed/)) return handle_collapsed_action_event({name: from, expanded: data.expanded})
             if (type.match(/tab-selected/)) return send( make({to, type: 'switch-page', data}) )
         }
     }
@@ -2763,7 +2823,7 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
 
     return widget()
 }
-},{"components/datdot-ui-actions/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-actions/src/index.js","components/datdot-ui-navigation/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-navigation/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js":[function(require,module,exports){
+},{"./account-action":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/account-action.js","components/datdot-ui-actions/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-actions/src/index.js","components/datdot-ui-navigation/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-navigation/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js":[function(require,module,exports){
 module.exports = make_element
 
 function make_element({name = '', classlist = null, role = undefined }) {
