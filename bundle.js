@@ -1796,11 +1796,9 @@ function i_button (opt, protocol) {
             set_attr({aria: 'expanded', prop: is_expanded})
         }
         // tab selected
-        function tab_selected_event (data) {
-            is_selected = data.selected
-            is_current = data.current
+        function tab_selected_event ({selected}) {
+            is_selected = selected
             set_attr({aria: 'selected', prop: is_selected})
-            set_attr({aria: 'current', prop: is_current})
             el.setAttribute('tabindex', is_current ? 0 : -1)
         }
         function list_selected_event (state) {
@@ -1813,7 +1811,6 @@ function i_button (opt, protocol) {
             // option is selected then send selected items to listbox button
             if (is_selected) send(make({to: 'listbox', type: 'changed', data: {text: body, cover, icon} }))
         }
-
         function changed_event (data) {
             const {text, cover, icon} = data
             const new_text = make_element({name: 'span', classlist: 'text'})
@@ -1841,7 +1838,6 @@ function i_button (opt, protocol) {
                     if (old_icon) old_icon.parentNode.replaceChild(new_icon, old_icon)
                     else shadow.insertBefore(new_icon, shadow.firstChild)
                 } 
-                
             }
             // change content for listbox
             if (role.match(/listbox/)) {
@@ -1860,7 +1856,6 @@ function i_button (opt, protocol) {
                 }
             } 
         }
-
         // button click
         function handle_click () {
             const type = 'click'
@@ -2629,32 +2624,29 @@ function navigation ({page = '*', flow = 'ui-navigation', to = '#', name = '.', 
         })
         return el
 
-        function handle_page_event (from, {selected, current}) {
-            const {childNodes} = el.shadowRoot
-            const result = [...childNodes].filter( child => child.getAttribute('aria-label') !== from)
-            const current_message = make({type: 'tab-selected', data: {selected, current}})
-            recipients[from](current_message)
-            send(current_message)
-            // if not target is from, then make tab current and selected changed to false
-            result.forEach( tab => {
-                const name = tab.getAttribute('aria-label')
-                recipients[name](make({type: 'tab-selected', data: {selected: !selected, current: !current}}))
-            })
+        function handle_current ({name, current}) {
+            if (current) return            
+            Object.entries(recipients).forEach(([key, value]) => {
+                if (key === name) {
+                    recipients[name](make({type: 'tab-selected', data: {selected: !current}}))
+                    return recipients[name](make({type: 'current', data: !current}))
+                }
+                recipients[key](make({type: 'tab-selected', data: {selected: current}}))
+                return recipients[key](make({type: 'current', data: current}))
+            }) 
         }
-
         function btn_protocol (name) {
             return send => {
                 recipients[name] = send
                 return get
             }
         }
-
         function get (msg) {
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             send(make(msg))
             if (type.match(/ready/)) return
-            if (type.match(/click/)) return handle_page_event(from, data)
+            if (type.match(/current/)) return handle_current(data)
         }
     }
 
