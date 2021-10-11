@@ -1129,11 +1129,11 @@ function wallet () {
     function get (msg) {
       const {head, type, refs, meta, data} = msg
       const from = head[0].split(' / ')[0]
+      const to = head[1]
       if (type.match(/ready/)) return 
       if (type.match(/click/)) return
-      if (type.match(/switch-page/)) return recipients[data.controls](make({type: 'load-page', data: data.page}))
+      if (type.match(/switch-page/)) return recipients[to](make({type: 'load-page', data}))
     }
-
   }
 
   let style = `
@@ -1343,7 +1343,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             recipients[from](make({type: 'collapsed', data: !expanded}))
         }
         function handle_current ({name, current}) {
-            if (current) return            
+            if (current) return
             Object.entries(recipients).forEach(([key, value]) => {
                 if (key === name) return recipients[name](make({type: 'current', data: !current}))
                 return recipients[key](make({type: 'current', data: current}))
@@ -1354,6 +1354,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             const from = head[0].split(' / ')[0]
             const role = head[0].split(' / ')[1]
             const to = head[1]
+            if (to) return send(msg)
             if (role === 'switch') return handle_switch(from, data)
         }
         function actions_protocol (name) {
@@ -1860,7 +1861,7 @@ function i_button (opt, protocol) {
         function handle_click () {
             const type = 'click'
             if ('current' in opt) {
-                send( make({type: 'current', data: {name, current: is_current}}) )
+                send( make({to: controls, type: 'current', data: {name, current: is_current}}) )
             }
             if ('expanded' in opt) {
                 const type = !is_expanded ? 'expanded' : 'collapsed'
@@ -1872,11 +1873,10 @@ function i_button (opt, protocol) {
             if (role === 'tab') {
                 if (is_current) return
                 is_selected = !is_selected
-                // is_current = !is_current
-                return send( make({type, data: {page: name, selected: is_selected}}) )
+                return send( make({to: controls, type, data: {page: name, selected: is_selected}}) )
             }
             if (role === 'switch') {
-                return send( make({type, data: {name, checked: is_checked}}) )
+                return send( make({to: controls, type, data: {name, checked: is_checked}}) )
             }
             if (role === 'listbox') {
                 is_expanded = !is_expanded
@@ -1884,7 +1884,7 @@ function i_button (opt, protocol) {
             }
             if (role === 'option') {
                 is_selected = !is_selected
-                return send( make({type, data: {name, selected: is_selected, content: is_selected ? {text: body, cover, icon} : '' }}) )
+                return send( make({to: controls, type, data: {name, selected: is_selected, content: is_selected ? {text: body, cover, icon} : '' }}) )
             }
         }
         // protocol get msg
@@ -2624,11 +2624,13 @@ function navigation ({page = '*', flow = 'ui-navigation', to = '#', name = '.', 
         })
         return el
 
-        function handle_current ({name, current}) {
+        function handle_current (to, data) {
+            const {name, current} = data
             if (current) return            
             Object.entries(recipients).forEach(([key, value]) => {
                 if (key === name) {
                     recipients[name](make({type: 'tab-selected', data: {selected: !current}}))
+                    send( make({to, type: 'tab-selected', data: {page: name}}) )
                     return recipients[name](make({type: 'current', data: !current}))
                 }
                 recipients[key](make({type: 'tab-selected', data: {selected: current}}))
@@ -2644,9 +2646,9 @@ function navigation ({page = '*', flow = 'ui-navigation', to = '#', name = '.', 
         function get (msg) {
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
-            send(make(msg))
-            if (type.match(/ready/)) return
-            if (type.match(/current/)) return handle_current(data)
+            const to = head[1]
+            if (type.match(/ready/)) return send(make(msg))
+            if (type.match(/current/)) return handle_current(to, data)
         }
     }
 
@@ -2696,7 +2698,7 @@ function i_container({page = '*', flow = 'ui-container', name, body = {}}, proto
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             send(make(msg))
-            if (type.match(/load-page/)) return console.log(msg)
+            if (type.match(/load-page/)) return console.log(data.page)
         }
     }
 
@@ -2738,10 +2740,6 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
         function handle_actions_event (from, data) {
             console.log(from, data)
         }
-
-        // function handle_page_switch (from, {selected, current}) {
-        //     console.log(selected, current)
-        // }
         function footer_protocol (name) {
             return send => {
                 recipients[name] = send
@@ -2751,8 +2749,10 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
         function get (msg) {
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
+            const to = head[1]
             send(make(msg))
-            // if (type === 'tab-selected') return handle_page_switch(from, data)
+            console.log(data)
+            if (type.match(/tab-selected/)) return send( make({to, type: 'switch-page', data}) )
         }
     }
     

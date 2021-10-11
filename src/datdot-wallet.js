@@ -56,11 +56,11 @@ function wallet () {
     function get (msg) {
       const {head, type, refs, meta, data} = msg
       const from = head[0].split(' / ')[0]
+      const to = head[1]
       if (type.match(/ready/)) return 
       if (type.match(/click/)) return
-      if (type.match(/switch-page/)) return recipients[data.controls](make({type: 'load-page', data: data.page}))
+      if (type.match(/switch-page/)) return recipients[to](make({type: 'load-page', data}))
     }
-
   }
 
   let style = `
