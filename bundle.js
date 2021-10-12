@@ -1399,19 +1399,16 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         }
         function handle_expanded (from, to, {expanded}) {
             const make = message_maker(`${from} / ${flow} / ${page}`)
-            if (from.match(/plan-list|map|linechart/)) {
-                const message = {type: 'expanded', data: !expanded}
-                recipients[from](make(message))
-                return send(make({to, ...message}))
-            }
             Object.keys(recipients).forEach( key => {
+                // to expand 
                 if (key === from) {
                     const message = {type: 'expanded', data: !expanded}
                     recipients[from](make(message))
                     return send(make({type: 'expanded', data: {expanded: !expanded}}))
                 }
-                if (key.match(/account|search|sort|filter|action|help/)) {
-                    return handle_collapsed(key, {expanded: !expanded})
+                // to prevent planlist, performance and linechart to collapse sub-actions
+                if (key.match(/account|search|sort|filter|custom|help/) && from.match(/account|search|sort|filter|custom|help/)) {
+                    return handle_collapsed(key, to, {expanded: !expanded})
                 }
             }) 
         }
@@ -2795,7 +2792,145 @@ function i_container({page = '*', flow = 'ui-container', name, body = {}}, proto
     return widget()
 }
 
-},{"bel":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/browser.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/footer.js":[function(require,module,exports){
+},{"bel":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/browser.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/custom-action.js":[function(require,module,exports){
+const style_sheet = require('support-style-sheet')
+const message_maker = require('message-maker')
+const make_grid = require('make-grid')
+const make_element = require('make-element')
+const {i_button} = require('components/datdot-ui-button')
+
+module.exports = custom_action
+
+function custom_action (opt, protocol) {
+    const {page = '*', flow = 'search-action', name = '.', body = '', hide = true, to = '#'} = opt
+    const recipients = []
+    const make = message_maker(`${name} / ${flow} / ${page}`)
+    let is_hidden = hide
+
+    function widget () {
+        const send = protocol(get)
+        const el = make_element({name: 'div', classlist: 'sub-action custom'})
+        const title = make_element({name: 'h5'})
+        const shadow = el.attachShadow({mode: 'closed'})
+        style_sheet(shadow, style)
+        title.textContent = 'custom action'
+        shadow.append(title)
+        set_attr({aria: 'hidden', prop: is_hidden})
+        send( make({type: 'ready'}) )
+        return el
+
+        function set_attr ({aria, prop}) {
+            return el.setAttribute(`aria-${aria}`, prop)
+        }
+        function handle_hide ({hide}) {
+            is_hidden = hide
+            set_attr({aria: 'hidden', prop: is_hidden})
+        }
+
+        function action_protocol (name) {
+            return send => {
+                recipients[name] = send
+                return get
+            }
+        }
+        function get (msg) {
+            const {head, type, refs, meta, data} = msg
+            const from = head[0].split(' / ')[0]
+            const to = head[1]
+            if (type.match(/show|hide/)) return handle_hide(data)
+        }
+    }
+
+    const style = `
+    :host(.sub-action) {
+        --bg-color: var(--color-white);
+        --opacity: 1;
+        --border-width: 1px;
+        --border-style: solid;
+        --border-color: var(--color-black);
+        display: grid;
+        background-color: hsla(var(--bg-color), var(--opacity));
+        border-top: var(--border-width) var(--border-style) hsl(var(--color-black));
+    }
+    :host(.sub-action[aria-hidden="true"]) {
+        display: none;
+    }
+    :host(.sub-action[aria-hidden="false"]) {
+    }
+    `
+
+    return widget()
+}
+},{"components/datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-button/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/filter-action.js":[function(require,module,exports){
+const style_sheet = require('support-style-sheet')
+const message_maker = require('message-maker')
+const make_grid = require('make-grid')
+const make_element = require('make-element')
+const {i_button} = require('components/datdot-ui-button')
+
+module.exports = filter_action
+
+function filter_action (opt, protocol) {
+    const {page = '*', flow = 'search-action', name = '.', body = '', hide = true, to = '#'} = opt
+    const recipients = []
+    const make = message_maker(`${name} / ${flow} / ${page}`)
+    let is_hidden = hide
+
+    function widget () {
+        const send = protocol(get)
+        const el = make_element({name: 'div', classlist: 'sub-action filter'})
+        const title = make_element({name: 'h5'})
+        const shadow = el.attachShadow({mode: 'closed'})
+        style_sheet(shadow, style)
+        title.textContent = 'filter action'
+        shadow.append(title)
+        set_attr({aria: 'hidden', prop: is_hidden})
+        send( make({type: 'ready'}) )
+        return el
+
+        function set_attr ({aria, prop}) {
+            return el.setAttribute(`aria-${aria}`, prop)
+        }
+        function handle_hide ({hide}) {
+            is_hidden = hide
+            set_attr({aria: 'hidden', prop: is_hidden})
+        }
+
+        function action_protocol (name) {
+            return send => {
+                recipients[name] = send
+                return get
+            }
+        }
+        function get (msg) {
+            const {head, type, refs, meta, data} = msg
+            const from = head[0].split(' / ')[0]
+            const to = head[1]
+            if (type.match(/show|hide/)) return handle_hide(data)
+        }
+    }
+
+    const style = `
+    :host(.sub-action) {
+        --bg-color: var(--color-white);
+        --opacity: 1;
+        --border-width: 1px;
+        --border-style: solid;
+        --border-color: var(--color-black);
+        display: grid;
+        background-color: hsla(var(--bg-color), var(--opacity));
+        border-top: var(--border-width) var(--border-style) hsl(var(--color-black));
+    }
+    :host(.sub-action[aria-hidden="true"]) {
+        display: none;
+    }
+    :host(.sub-action[aria-hidden="false"]) {
+    }
+    `
+
+    return widget()
+}
+},{"components/datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-button/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/footer.js":[function(require,module,exports){
 const message_maker = require('message-maker')
 const make_element = require('make-element')
 const style_sheet = require('support-style-sheet')
@@ -2805,6 +2940,9 @@ const i_actions = require('components/datdot-ui-actions/src')
 // call actions
 const account_action = require('./account-action')
 const search_action = require('./search-action')
+const filter_action = require('./filter-action')
+const sort_action = require('./sort-action')
+const custom_action = require('./custom-action')
 
 module.exports = i_footer
 function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = '#'}, protocol) {
@@ -2830,6 +2968,9 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
             })
         }
         function handle_open_action_event ({name, type, hide}) {
+            if (name === 'planlist') return
+            if (name === 'performance') return
+            if (name === 'linechart') return
             // check sub-action existed
             if (shadow.querySelector(`.sub-action.${name}`)) {
                 Object.keys(recipients).forEach( key => {
@@ -2840,17 +2981,20 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
             }
             // check other sub-action existed and do deleted
             const sub_actions = shadow.querySelectorAll(`.sub-action`)
-            if (name === 'account') var sub_action = account_action({name: `${name}-action`, hide: !hide}, footer_protocol(`${name}-action`))
-            if (name === 'search') var sub_action = search_action({name: `${name}-action`, hide: !hide}, footer_protocol(`${name}-action`))
-            
-            shadow.insertBefore(sub_action, actions)
+            const sub_option = (action) => action({name: `${name}-action`, hide: !hide}, footer_protocol(`${name}-action`))
+            const sub_action =  (name === 'account') ? sub_option(account_action)
+                                : (name === 'search') ? sub_option(search_action)
+                                : (name === 'filter') ? sub_option(filter_action)
+                                : (name.match(/sort/)) ? sub_option(sort_action)
+                                : (name === 'custom-action') ? sub_option(custom_action)
+                                : undefined
 
+            if (sub_action) shadow.insertBefore(sub_action, actions)
             if (sub_actions.length > 0) {
                 sub_actions.forEach( action => {
                     shadow.removeChild(action)
                 })
             }
-            
             return
         }
         function footer_protocol (name) {
@@ -2875,7 +3019,7 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
 
     return widget()
 }
-},{"./account-action":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/account-action.js","./search-action":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/search-action.js","components/datdot-ui-actions/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-actions/src/index.js","components/datdot-ui-navigation/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-navigation/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js":[function(require,module,exports){
+},{"./account-action":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/account-action.js","./custom-action":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/custom-action.js","./filter-action":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/filter-action.js","./search-action":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/search-action.js","./sort-action":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/sort-action.js","components/datdot-ui-actions/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-actions/src/index.js","components/datdot-ui-navigation/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-navigation/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js":[function(require,module,exports){
 module.exports = make_element
 
 function make_element({name = '', classlist = null, role = undefined }) {
@@ -2924,6 +3068,75 @@ function search_action (opt, protocol) {
         const shadow = el.attachShadow({mode: 'closed'})
         style_sheet(shadow, style)
         title.textContent = 'search action'
+        shadow.append(title)
+        set_attr({aria: 'hidden', prop: is_hidden})
+        send( make({type: 'ready'}) )
+        return el
+
+        function set_attr ({aria, prop}) {
+            return el.setAttribute(`aria-${aria}`, prop)
+        }
+        function handle_hide ({hide}) {
+            is_hidden = hide
+            set_attr({aria: 'hidden', prop: is_hidden})
+        }
+
+        function action_protocol (name) {
+            return send => {
+                recipients[name] = send
+                return get
+            }
+        }
+        function get (msg) {
+            const {head, type, refs, meta, data} = msg
+            const from = head[0].split(' / ')[0]
+            const to = head[1]
+            if (type.match(/show|hide/)) return handle_hide(data)
+        }
+    }
+
+    const style = `
+    :host(.sub-action) {
+        --bg-color: var(--color-white);
+        --opacity: 1;
+        --border-width: 1px;
+        --border-style: solid;
+        --border-color: var(--color-black);
+        display: grid;
+        background-color: hsla(var(--bg-color), var(--opacity));
+        border-top: var(--border-width) var(--border-style) hsl(var(--color-black));
+    }
+    :host(.sub-action[aria-hidden="true"]) {
+        display: none;
+    }
+    :host(.sub-action[aria-hidden="false"]) {
+    }
+    `
+
+    return widget()
+}
+},{"components/datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-button/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/sort-action.js":[function(require,module,exports){
+const style_sheet = require('support-style-sheet')
+const message_maker = require('message-maker')
+const make_grid = require('make-grid')
+const make_element = require('make-element')
+const {i_button} = require('components/datdot-ui-button')
+
+module.exports = sort_action
+
+function sort_action (opt, protocol) {
+    const {page = '*', flow = 'search-action', name = '.', body = '', hide = true, to = '#'} = opt
+    const recipients = []
+    const make = message_maker(`${name} / ${flow} / ${page}`)
+    let is_hidden = hide
+
+    function widget () {
+        const send = protocol(get)
+        const el = make_element({name: 'div', classlist: 'sub-action sort'})
+        const title = make_element({name: 'h5'})
+        const shadow = el.attachShadow({mode: 'closed'})
+        style_sheet(shadow, style)
+        title.textContent = 'sort action'
         shadow.append(title)
         set_attr({aria: 'hidden', prop: is_hidden})
         send( make({type: 'ready'}) )
