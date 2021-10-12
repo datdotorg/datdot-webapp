@@ -1211,15 +1211,15 @@ function account_action (opt, protocol) {
 
         const accounts_list_option = [
             {
-                icon: {name: 'account'},
+                icon: {name: 'star'},
                 selected: true,
             },
             {
-                icon: {name: 'account'},
+                icon: {name: 'debug'},
                 selected: false,
             },
             {
-                icon: {name: 'account'},
+                icon: {name: 'activity'},
                 selected: false,
             }
         ]
@@ -1231,6 +1231,7 @@ function account_action (opt, protocol) {
         make_buttons({args: current_account_option, target: current_account_action})
         
         const accounts_list = i_list({name: 'account-select-list', body: accounts_list_option, mode: 'single-select', hidden: false}, actions_protocol('account-select-list'))
+
         accounts_list_action.append(accounts_list)
 
         shadow.append(main_action)
@@ -2757,7 +2758,6 @@ function i_list (opts = {}, protocol) {
     const store_selected = []
     const {grid} = theme
 
-    console.log(body)
     function widget () {
         const send = protocol( get )
         send(message)
