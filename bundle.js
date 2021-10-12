@@ -1203,7 +1203,7 @@ function account_action (opt, protocol) {
         ]
 
         const current_account_option = [
-            {name: 'account-transfer', icon: 'plus', role: 'button', controls: 'action-panel', current: false, expanded: false, theme: button_theme},
+            {name: 'account-transfer', icon: 'transfer', role: 'button', controls: 'action-panel', current: false, expanded: false, theme: button_theme},
             {name: 'account-edit', icon: 'edit', role: 'button', controls: 'action-panel',  current: false, expanded: false, theme: button_theme},
             {name: 'account-delete', icon: 'trash', role: 'button', controls: 'action-panel',  current: false, expanded: false, theme: button_theme},
         ]
@@ -1212,17 +1212,14 @@ function account_action (opt, protocol) {
         const accounts_list_option = [
             {
                 icon: {name: 'account'},
-                list: {name: 'check'},
                 selected: true,
             },
             {
                 icon: {name: 'account'},
-                list: {name: 'check'},
                 selected: false,
             },
             {
                 icon: {name: 'account'},
-                list: {name: 'check'},
                 selected: false,
             }
         ]
@@ -1232,7 +1229,9 @@ function account_action (opt, protocol) {
 
         make_buttons({args: main_option, target: main_action})
         make_buttons({args: current_account_option, target: current_account_action})
-        make_buttons({args: accounts_list_option, target: accounts_list_action})
+        
+        const accounts_list = i_list({name: 'account-select-list', body: accounts_list_option, mode: 'single-select', hidden: false}, actions_protocol('account-select-list'))
+        accounts_list_action.append(accounts_list)
 
         shadow.append(main_action)
 
@@ -1243,8 +1242,8 @@ function account_action (opt, protocol) {
 
         function make_buttons ({args, target}) {
             args.forEach( obj => { 
-                const expanded = ('expanded' in obj) ? {expanded: obj.expanded} : void 0
-                const current = ('current' in obj) ? {current: obj.current} : void 0
+                const expanded = ('expanded' in obj) ? obj.expanded : void 0
+                const current = ('current' in obj) ? obj.current : void 0
                 const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.icon}}, expanded, current, controls: obj.controls, theme: obj.theme}, actions_protocol(obj.name))
                 target.append(button)
             })
@@ -1279,6 +1278,12 @@ function account_action (opt, protocol) {
         --border-style: solid;
         --border-color: var(--color-black);
         display: grid;
+        ${make_grid({
+            columns: 'auto 1fr auto',
+            auto: {
+                auto_flow: 'column'
+            }
+        })}
         background-color: hsla(var(--bg-color), var(--opacity));
         border-top: var(--border-width) var(--border-style) hsl(var(--color-black));
     }
@@ -2752,6 +2757,7 @@ function i_list (opts = {}, protocol) {
     const store_selected = []
     const {grid} = theme
 
+    console.log(body)
     function widget () {
         const send = protocol( get )
         send(message)
