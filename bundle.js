@@ -1188,7 +1188,6 @@ function account_action (opt, protocol) {
             is_hidden = hide
             set_attr({aria: 'hidden', prop: is_hidden})
         }
-
         function action_protocol (name) {
             return send => {
                 recipients[name] = send
