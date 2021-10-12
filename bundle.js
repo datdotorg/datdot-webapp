@@ -1211,15 +1211,18 @@ function account_action (opt, protocol) {
 
         const accounts_list_option = [
             {
-                icon: {name: 'star'},
+                text: 'account1',
+                icon: {name: 'account'},
                 selected: true,
             },
             {
-                icon: {name: 'debug'},
+                text: 'account2',
+                icon: {name: 'account'},
                 selected: false,
             },
             {
-                icon: {name: 'activity'},
+                text: 'account3',
+                icon: {name: 'account'},
                 selected: false,
             }
         ]
@@ -1625,7 +1628,7 @@ module.exports = {i_button, i_link}
 function i_link (opt, protocol) {
     const {page = '*', flow = 'ui-link', name, role='link', body, link = {}, icons = {}, classlist, cover, disabled = false, theme = {}} = opt
     const { icon } = icons
-    const make_icon = icons && icon ? main_icon(icon) : undefined
+    const make_icon = 'icon' in icons ? main_icon(icon) : undefined
     let {url = '#', target = '_self'} = link
     let is_disabled = disabled
 
@@ -1650,7 +1653,7 @@ function i_link (opt, protocol) {
         const add_text = body ? typeof body === 'string' && (add_icon || add_cover ) ? text : body : typeof body === 'object' && body.localName === 'div' ? body : undefined
         if (typeof cover === 'string') avatar.append(make_img({src: cover, alt: name}))
         if (typeof cover === 'object') send(make({type: 'error', data: `cover[${typeof cover}] must to be a string`}))
-        if (add_icon) shadow.append(add_icon)
+        if (add_icon) shadow.append(make_icon)
         if (add_cover) shadow.append(add_cover)
         if (add_text) shadow.append(add_text)
         send(message)
@@ -1931,6 +1934,7 @@ function i_button (opt, protocol) {
             // listbox or dropdown button
             if (role.match(/listbox/)) shadow.append(make_select_icon, listbox)
             items.forEach( item => {
+                console.log(item)
                 if (item === undefined) return
                 target.append(item)
             })

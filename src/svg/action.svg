@@ -5,6 +5,36 @@
     </clipPath>
   </defs>
   <g id="action" clip-path="url(#clip-action)">
-    <path id="action" data-name="action" d="M-7967-4938.476v-4.309h16v4.309Zm11.791-6.338v-3.077H-7951v3.077Zm-5.9,0v-3.077h4.211v3.077Zm-5.895,0v-3.077h4.211v3.077Zm11.791-5.109V-4953H-7951v3.077Zm-5.9,0V-4953h4.211v3.077Zm-5.895,0V-4953h4.211v3.077Z" transform="translate(7967 4953.738)"/>
+    <g id="Group_3745" data-name="Group 3745" transform="translate(-541 -711)">
+      <rect id="Rectangle_2638" data-name="Rectangle 2638" width="14" height="4.727" transform="translate(542 721.273)"/>
+      <g id="Group_3468" data-name="Group 3468" transform="translate(542 716.637)">
+        <g id="Rectangle_2641" data-name="Rectangle 2641" transform="translate(10.316)" stroke="#000" stroke-width="1">
+          <rect width="3.684" height="3.505" stroke="none"/>
+          <rect x="0.5" y="0.5" width="2.684" height="2.505" fill="none"/>
+        </g>
+        <g id="Rectangle_2640" data-name="Rectangle 2640" transform="translate(5.158)" stroke="#000" stroke-width="1">
+          <rect width="3.684" height="3.505" stroke="none"/>
+          <rect x="0.5" y="0.5" width="2.684" height="2.505" fill="none"/>
+        </g>
+        <g id="Rectangle_2639" data-name="Rectangle 2639" stroke="#000" stroke-width="1">
+          <rect width="3.684" height="3.505" stroke="none"/>
+          <rect x="0.5" y="0.5" width="2.684" height="2.505" fill="none"/>
+        </g>
+      </g>
+      <g id="Group_3469" data-name="Group 3469" transform="translate(542 712)">
+        <g id="Rectangle_2641-2" data-name="Rectangle 2641" transform="translate(10.316)" stroke="#000" stroke-width="1">
+          <rect width="3.684" height="3.505" stroke="none"/>
+          <rect x="0.5" y="0.5" width="2.684" height="2.505" fill="none"/>
+        </g>
+        <g id="Rectangle_2640-2" data-name="Rectangle 2640" transform="translate(5.158)" stroke="#000" stroke-width="1">
+          <rect width="3.684" height="3.505" stroke="none"/>
+          <rect x="0.5" y="0.5" width="2.684" height="2.505" fill="none"/>
+        </g>
+        <g id="Rectangle_2639-2" data-name="Rectangle 2639" stroke="#000" stroke-width="1">
+          <rect width="3.684" height="3.505" stroke="none"/>
+          <rect x="0.5" y="0.5" width="2.684" height="2.505" fill="none"/>
+        </g>
+      </g>
+    </g>
   </g>
 </svg>
