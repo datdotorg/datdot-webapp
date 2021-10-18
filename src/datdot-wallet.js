@@ -59,7 +59,8 @@ function wallet () {
       const to = head[1]
       if (type.match(/ready/)) return 
       if (type.match(/click/)) return
-      if (type.match(/switch-page/)) return recipients[to](make({type: 'load-page', data}))
+      if (type.match(/switch-page/)) return recipients['wallet-container'](make({type: 'load-page', data}))
+      if (type.match(/selected/)) return console.log(from, data)
     }
   }
 

@@ -1209,6 +1209,7 @@ function i_list (opts = {}, protocol) {
                     disabled_color = 'var(--primary-disabled-color)',
                     disabled_bg_color = 'var(--primary-disabled-bg-color)',
                     disabled_icon_fill = 'var(--primary-disabled-fill)',
+                    padding = '',
                     opacity = '0'
                 } = props
 
@@ -1234,13 +1235,12 @@ function i_list (opts = {}, protocol) {
                         current_list_selected_icon_size, current_list_selected_icon_fill,
                         list_selected_icon_size, list_selected_icon_fill, list_selected_icon_fill_hover,
                         disabled_color, disabled_bg_color, disabled_icon_fill,
+                        padding,
                         opacity
                     }, 
                     grid
                 }}, button_protocol(list_name))
 
-                console.log(style);
-                
                 const li = document.createElement('li')
                 li.dataset.option = text || list_name
                 li.setAttribute('aria-selected', is_current || selected)
@@ -1273,6 +1273,7 @@ function i_list (opts = {}, protocol) {
                     disabled_color = 'var(--primary-disabled-color)',
                     disabled_bg_color = 'var(--primary-disabled-bg-color)',
                     disabled_icon_fill = 'var(--primary-disabled-icon-fill)',
+                    padding = null
                 } = props
                 if (role === 'link' ) {
                     var item = i_link({
@@ -1312,7 +1313,8 @@ function i_list (opts = {}, protocol) {
                                 icon_fill, icon_fill_hover,
                                 icon_size,
                                 avatar_width, avatar_height, avatar_radius,
-                                disabled_color, disabled_bg_color, disabled_icon_fill
+                                disabled_color, disabled_bg_color, disabled_icon_fill,
+                                padding
                             },
                             grid
                         }
@@ -2640,7 +2642,8 @@ function wallet () {
       const to = head[1]
       if (type.match(/ready/)) return 
       if (type.match(/click/)) return
-      if (type.match(/switch-page/)) return recipients[to](make({type: 'load-page', data}))
+      if (type.match(/switch-page/)) return recipients['wallet-container'](make({type: 'load-page', data}))
+      if (type.match(/selected/)) return console.log(from, data)
     }
   }
 
@@ -2720,6 +2723,12 @@ function account_action (opt, protocol) {
 
         // const accounts_list_option = void 0
         const path = 'https://avatars.dicebear.com/api/bottts'
+        const accounts_theme = {
+            props: {
+                avatar_width: '24px',
+                padding: '4px 8px'
+            }
+        }
         const accounts_list_option = [
             {
                 list_name: 'account1',
@@ -2729,6 +2738,8 @@ function account_action (opt, protocol) {
                 //     icon: {name: 'datdot-app', path: 'https://avatars.dicebear.com/api/pixel-art-neutral/'},
                 // },
                 current: true,
+                controls: 'wallet-footer-account',
+                theme: accounts_theme
             },
             {
                 list_name: 'account2',
@@ -2737,6 +2748,8 @@ function account_action (opt, protocol) {
                 // icons: {
                 //     icon: {name: 'robot', path},
                 // },
+                controls: 'wallet-footer-account',
+                theme: accounts_theme
             },
             {
                 list_name: 'account3',
@@ -2745,6 +2758,8 @@ function account_action (opt, protocol) {
                 // icons: {
                 //     icon: {name: 'developer', path},
                 // },
+                controls: 'wallet-footer-account',
+                theme: accounts_theme
             },
             {
                 list_name: 'account4',
@@ -2753,6 +2768,8 @@ function account_action (opt, protocol) {
                 // icons: {
                 //     icon: {name: 'ai', path},
                 // },
+                controls: 'wallet-footer-account',
+                theme: accounts_theme
             },
             {
                 list_name: 'account5',
@@ -2761,6 +2778,8 @@ function account_action (opt, protocol) {
                 // icons: {
                 //     icon: {name: 'flower', path},
                 // },
+                controls: 'wallet-footer-account',
+                theme: accounts_theme
             },
             {
                 list_name: 'account6',
@@ -2769,6 +2788,8 @@ function account_action (opt, protocol) {
                 // icons: {
                 //     icon: {name: 'marine', path},
                 // },
+                controls: 'wallet-footer-account',
+                theme: accounts_theme
             }
         ]
        
@@ -2787,15 +2808,9 @@ function account_action (opt, protocol) {
                     mode: 'single-select', 
                     hidden: false,
                     theme: {
-                        style: `
-                            :host(i-button) .avatar {
-                                max-width: 30px;
-                            }
-                        `,
                         props: {
                             border_width: '0',
                             border_radius: '0',
-                            option_avatar_width: '30px'
                         },
                         grid: {
                             auto: {
@@ -2823,6 +2838,16 @@ function account_action (opt, protocol) {
         function set_attr ({aria, prop}) {
             return el.setAttribute(`aria-${aria}`, prop)
         }
+
+        // handle events
+        function handle_account_selected ({from, to = 'wallet-footer'}) {
+            return send(make({to, type: 'switch-account', data: {name: from}}))
+        }
+
+        function handle_current ({from, to, type, data}) {
+            console.log(from, to, type, data)
+        }
+        // make account action bar to hide
         function handle_hide ({hide}) {
             is_hidden = hide
             set_attr({aria: 'hidden', prop: is_hidden})
@@ -2837,7 +2862,10 @@ function account_action (opt, protocol) {
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             const to = head[1]
+            if (type.match(/click/)) return 
             if (type.match(/show|hide/)) return handle_hide(data)
+            if (type.match(/current/)) return handle_current({from, to, type, data})
+            if (type.match(/selected/)) return handle_account_selected({from, to})
         }
     }
 
@@ -2884,6 +2912,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
     const recipients = []
 
     function widget () {
+        const make = message_maker(`${name} / ${flow} / ${page}`)
         const send = protocol(get)
         const el = make_element({name: 'i-actions'})
         const shadow = el.attachShadow({mode: 'closed'})
@@ -3019,6 +3048,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             }
         })
 
+        send(make({type: 'ready'}))
         return el
       
         function make_buttons ({args, target}) {
@@ -3037,6 +3067,10 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             })
         }
 
+        // event handler
+        function handle_account_changed (data) {
+            console.log('account changed', data)
+        }
         function handle_switch ({from, to, data}) {
             const {name, checked} = data
             const make = message_maker(`${name} / ${flow} / ${page}`)
@@ -3122,6 +3156,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             if (type.match(/expanded/)) return handle_expanded(from, to, data)
             if (type.match(/collapsed/)) return handle_collapsed(from, to, data)
             if (type.match(/current/)) return handle_current(data)
+            if (type.match(/account-changed/)) return handle_account_changed(data)
         }
     }
 
@@ -3301,7 +3336,7 @@ function i_container({page = '*', flow = 'ui-container', name, body = {}}, proto
     function widget () {
         const send = protocol(get)
         const el = make_element({name: 'i-container'})
-        const shadow = el.attachShadow({mode: 'open'})
+        const shadow = el.attachShadow({mode: 'closed'})
         const content = make_element({name: 'section', classlist: 'content'})
         content.append(bel`<h1>DatDot wallet</h1>`)
         // !important style_sheet must be implemented before shadow 
@@ -3539,6 +3574,11 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
             }
             return
         }
+
+        // send account changed to ${name}-actions
+        function handle_switch_account_event (data) {
+            recipients[`${name}-actions`](make({type: 'account-changed', data}))
+        }
         function footer_protocol (name) {
             return send => {
                 recipients[name] = send
@@ -3549,11 +3589,14 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             const to = head[1]
+            console.log(from, type)
             if (type.match(/ready/)) return send(make(msg))
-            if (type.match(/click/)) return 
+            if (type.match(/click/)) return send(make(msg))
             if (type.match(/expanded/)) return handle_open_action_event({name: from, type: 'show', hide: data.expanded})
             if (type.match(/collapsed/)) return handle_close_action_event({name: from, type: 'hide', hide: data})
             if (type.match(/tab-selected/)) return send( make({to, type: 'switch-page', data}) )
+            if (type.match(/switch-page/)) return send(make(msg))
+            if (type.match(/switch-account/)) return handle_switch_account_event(data)
         }
     }
     
