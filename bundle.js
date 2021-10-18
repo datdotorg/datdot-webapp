@@ -286,7 +286,9 @@ function i_button (opt, protocol) {
                 set_attr({aria: 'controls', prop: controls})
                 el.setAttribute('tabindex', is_current ? 0 : -1)
             }
-            if (role === 'switch') set_attr({aria: 'checked', prop: is_checked})
+            if (role === 'switch') {
+                set_attr({aria: 'checked', prop: is_checked})
+            }
             if (role === 'listbox') set_attr({aria: 'haspopup', prop: role})
             if (disabled) {
                 set_attr({aria: 'disabled', prop: is_disabled})
@@ -326,8 +328,8 @@ function i_button (opt, protocol) {
         function switched_event (data) {
             const {checked} = data
             is_checked = checked
-            if (!is_checked) return el.removeAttribute('aria-checked')
-            set_attr({aria: 'checked', prop: is_checked})
+            if (is_checked) return set_attr({aria: 'checked', prop: is_checked})
+            else el.removeAttribute('aria-checked')
         }
         function expanded_event (data) {
             is_expanded = data
@@ -551,7 +553,6 @@ function i_button (opt, protocol) {
         --avatar-width: ${avatar_width ? avatar_width : 'var(--primary-avatar-width)'};
         --avatar-height: ${avatar_height ? avatar_height : 'var(--primary-avatar-height)'};
         --avatar-radius: ${avatar_radius ? avatar_radius : 'var(--primary-avatar-radius)'};
-        --current-icon-size: ${current_icon_size ? current_icon_size : 'var(--current-icon-size)'};
         display: inline-grid;
         ${grid.button ? make_grid(grid.button) : make_grid({auto: {auto_flow: 'column'}, gap: '5px', justify: 'content-center', align: 'items-center'})}
         ${width && 'width: var(--width);'};
@@ -716,10 +717,10 @@ function i_button (opt, protocol) {
         --bg-color: ${current_bg_color ? current_bg_color : 'var(--current-bg-color)'};
     }
     :host(i-button[aria-current="true"]) .icon,  :host(i-button[aria-current="true"]:hover) .icon {
-        --icon-size: var(--current-icon-size);
+        --icon-size: ${current_icon_size || 'var(--current-icon-size)'};
     }
     :host(i-button[aria-current="true"]) g {
-        --icon-fill: ${current_icon_fill ? current_icon_fill : 'var(--current-icon-fill)'};
+        --icon-fill: ${current_icon_fill || 'var(--current-icon-fill)'};
     }
     :host(i-button[aria-current="true"]:focus) {
         --color: var(--color-focus);
@@ -727,7 +728,7 @@ function i_button (opt, protocol) {
     }
     :host(i-button[role="option"][aria-current="true"][aria-selected="true"]) .option > .icon, 
     :host(i-button[role="option"][aria-current="true"][aria-selected="true"]:hover) .option > .icon {
-        --icon-size: var(--current-icon-size);
+        --icon-size: ${current_icon_size || 'var(--current-icon-size)'};
     }
     /*
     :host(i-button[role="option"][aria-current="true"][aria-selected="true"]) .option > .icon g,
@@ -2897,6 +2898,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
                 icon_fill: 'var(--color-black)',
                 icon_fill_hover: 'var(--color-black)',
                 bg_color_hover: 'var(--color-greyED)',
+                current_icon_size: '20px',
                 current_icon_fill: 'var(--color-black)',
                 current_bg_color: 'var(--color-greyA2)',
                 padding: '8px 10px 4px 10px'
@@ -2998,7 +3000,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         function make_buttons ({args, target}) {
             args.forEach( obj => {
                 if (obj.hide) return
-                const checked = ('checked' in obj) ? {checked: obj.checked} : void 0
+                const checked = ('checked' in obj) ?  obj.checked : void 0
                 const expanded = ('expanded' in obj) ? obj.expanded : void 0
                 const current = ('current' in obj) ? obj.current : void 0
                 const button = i_button({page, name: obj.name, role: obj.role, icons: {icon: {name: obj.icon}}, checked, expanded, current, controls: obj.controls, theme: obj.theme}, actions_protocol(obj.name))
@@ -3012,14 +3014,15 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         }
 
         function handle_switch ({from, to, data}) {
-            const checked = data.checked
-            const make = message_maker(`${from} / ${flow} / ${page}`)
-            if (from.match(/sort/)) {
-                const not_switched = make({type: 'switched', data: {checked}})
-                if (from === 'sort-up') recipients['sort-down'](not_switched)
-                if (from === 'sort-down') recipients['sort-up'](not_switched)
+            const {name, checked} = data
+            const make = message_maker(`${name} / ${flow} / ${page}`)
+            if (from.match(/sort/))  {
+                const filter_sorts = Object.keys(recipients).filter( key => key.match(/sort/) )
+                filter_sorts.forEach( sort => {
+                    if (sort === from) return recipients[sort]( make({type: 'switched', data: {checked: !checked}}) )
+                    recipients[sort]( make({type: 'switched', data: {checked: checked}}) )
+                })
             }
-            recipients[from](make({type: 'switched', data: {checked: !checked}}))
         }
         function handle_expanded (from, to, {expanded}) {
             const make = message_maker(`${from} / ${flow} / ${page}`)
@@ -3057,7 +3060,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             const role = head[0].split(' / ')[1]
             const make = message_maker(`${from} / ${flow} / ${page}`)
             const to = head[1]
-            if (to) return send(make(msg))
+            send(make(msg))
             if (role === 'switch') return handle_switch({from, to, data})
         }
         function actions_protocol (name) {
