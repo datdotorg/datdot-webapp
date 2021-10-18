@@ -241,7 +241,7 @@ function i_link (opt, protocol) {
 }
 
 function i_button (opt, protocol) {
-    const {page = "*", flow = 'ui-button', name, role = 'button', controls, body = '', icons = {}, cover, classlist = null, mode = '', state, expanded = false, current = undefined, selected = false, checked = false, disabled = false, theme = {}} = opt
+    const {page = "*", flow = 'ui-button', name, role = 'button', controls, body = '', icons = {}, cover, classlist = null, mode = '', state, expanded = undefined, current = undefined, selected = false, checked = false, disabled = false, theme = {}} = opt
     const {icon, select = {}, list = {}} = icons
     const make_icon = icon ? main_icon(icon) : undefined
     if (role === 'listbox') var make_select_icon = select_icon(select)
@@ -299,7 +299,7 @@ function i_button (opt, protocol) {
                 is_selected = is_current ? is_current : is_selected
                 set_attr({aria: 'selected', prop: is_selected})
             }
-            if ('expanded' in opt) {
+            if (expanded !== undefined) {
                 set_attr({aria: 'expanded', prop: is_expanded})
             }
             // make current status
@@ -406,7 +406,7 @@ function i_button (opt, protocol) {
             if ('current' in opt) {
                 send( make({to: controls, type: 'current', data: {name, current: is_current}}) )
             }
-            if ('expanded' in opt) {
+            if (expanded !== undefined) {
                 const type = !is_expanded ? 'expanded' : 'collapsed'
                 send( make({type, data: {name, expanded: is_expanded}}))
             }
@@ -3017,11 +3017,23 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         function handle_switch ({from, to, data}) {
             const {name, checked} = data
             const make = message_maker(`${name} / ${flow} / ${page}`)
+            // for sort-up and sort-down
             if (from.match(/sort/))  {
-                const filter_sorts = Object.keys(recipients).filter( key => key.match(/sort/) )
-                filter_sorts.forEach( sort => {
-                    if (sort === from) return recipients[sort]( make({type: 'switched', data: {checked: !checked}}) )
-                    recipients[sort]( make({type: 'switched', data: {checked}}) )
+                if (checked) return
+                const filter_results = Object.keys(recipients).filter( key => key.match(/sort/) )
+                filter_results.forEach( result => {
+                    if (result === from) return recipients[from]( make({type: 'switched', data: {checked: !checked}}) )
+                    recipients[result]( make({type: 'switched', data: {checked}}) )
+                })
+                return
+            }
+            // for plan-play and plan-pasue
+            if (from.match(/plan-/)) {
+                if (checked) return
+                const filter_results = Object.keys(recipients).filter( key => key.match(/plan-play|plan-pause/) )
+                filter_results.forEach( result => {
+                    if (result === from) return recipients[from]( make({type: 'switched', data: {checked: !checked}}) )
+                    recipients[result]( make({type: 'switched', data: {checked}}) )
                 })
                 return
             }
@@ -3029,7 +3041,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
             if (from.match(/planlist|performance|linechart/)) {
                 const message = {to, type: 'panel-hide', data: {name, hide: checked}}
                 send(make(message))
-                recipients[from]( make({type: 'switched', data: {checked: !checked}}) )
+                
                 return
             }
         }
@@ -3057,7 +3069,6 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
         function handle_current ({name, current}) {
             if (current) return
             const make = message_maker(`${name} / ${flow} / ${page}`)
-            
             Object.keys(recipients).forEach(key => {
                 if (key === name) return recipients[name](make({type: 'current', data: !current}))
                 return recipients[key](make({type: 'current', data: current}))
