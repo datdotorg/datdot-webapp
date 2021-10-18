@@ -2933,6 +2933,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
                 icon_fill: 'var(--color-greyA2)',
                 icon_fill_hover: 'var(--color-black)',
                 bg_color_hover: 'var(--color-greyED)',
+                current_icon_size: '20px',
                 padding: '8px 10px 4px 10px'
             }
         }
@@ -3020,8 +3021,16 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
                 const filter_sorts = Object.keys(recipients).filter( key => key.match(/sort/) )
                 filter_sorts.forEach( sort => {
                     if (sort === from) return recipients[sort]( make({type: 'switched', data: {checked: !checked}}) )
-                    recipients[sort]( make({type: 'switched', data: {checked: checked}}) )
+                    recipients[sort]( make({type: 'switched', data: {checked}}) )
                 })
+                return
+            }
+            // toggle planlist or performance or linechart to show/hide
+            if (from.match(/planlist|performance|linechart/)) {
+                const message = {to, type: 'panel-hide', data: {name, hide: checked}}
+                send(make(message))
+                recipients[from]( make({type: 'switched', data: {checked: !checked}}) )
+                return
             }
         }
         function handle_expanded (from, to, {expanded}) {
