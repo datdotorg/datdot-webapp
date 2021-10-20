@@ -11,7 +11,7 @@ module.exports = wallet
 // accounts option
 const path = 'https://avatars.dicebear.com/api/bottts'
 
-const accounts_option = [
+let accounts_option = [
   {
       list_name: 'account1',
       address: '0x288e86504a82c93c85b208a23ed9ff6f423e966f1c5c87f7b367378bed0430479',
@@ -37,6 +37,7 @@ const accounts_option = [
       // icons: {
       //     icon: {name: 'robot', path},
       // },
+      current: false,
       controls: 'wallet-footer-account',
       theme: {
         props: {
@@ -53,6 +54,7 @@ const accounts_option = [
       // icons: {
       //     icon: {name: 'developer', path},
       // },
+      current: false,
       controls: 'wallet-footer-account',
       theme: {
         props: {
@@ -153,6 +155,14 @@ function wallet () {
     shadow.append(container, footer)
     return el
 
+    function handle_change_account({from, data}) {
+      const arr = [...accounts_option]
+      arr.map( obj => {
+        obj.current = obj.list_name === data.name
+        if (obj.current) return recipients[from]( make({type: 'account-changed', data: obj}) )
+      })
+      return accounts_option = [...arr]
+    }
     function protocol (name) {
       return send => {
         recipients[name] = send
@@ -166,6 +176,7 @@ function wallet () {
       if (type.match(/ready/)) return 
       if (type.match(/click/)) return
       if (type.match(/switch-page/)) return recipients['wallet-container'](make({type: 'load-page', data}))
+      if (type.match(/switch-account/)) return handle_change_account({from, data})
       if (type.match(/selected/)) return console.log(from, data)
     }
   }

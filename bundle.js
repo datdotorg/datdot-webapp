@@ -1178,7 +1178,7 @@ function i_list (opts = {}, protocol) {
 
         function make_selector (args) {
             args.forEach( (list, i) => {
-                const {list_name, text = undefined, role = 'option', icons = {}, cover, current = undefined, selected = false, disabled = false, theme = {}} = list
+                const {list_name, address = undefined, text = undefined, role = 'option', icons = {}, cover, current = undefined, selected = false, disabled = false, theme = {}} = list
                 const {style = ``, props = {}} = theme
                 const {
                     size = 'var(--primary-size)', 
@@ -1242,6 +1242,7 @@ function i_list (opts = {}, protocol) {
                 }}, button_protocol(list_name))
 
                 const li = document.createElement('li')
+                if (address) li.dataset.address = address
                 li.dataset.option = text || list_name
                 li.setAttribute('aria-selected', is_current || selected)
                 if (is_current) li.setAttribute('aria-current', is_current)
@@ -2594,7 +2595,7 @@ module.exports = wallet
 // accounts option
 const path = 'https://avatars.dicebear.com/api/bottts'
 
-const accounts_option = [
+let accounts_option = [
   {
       list_name: 'account1',
       address: '0x288e86504a82c93c85b208a23ed9ff6f423e966f1c5c87f7b367378bed0430479',
@@ -2620,6 +2621,7 @@ const accounts_option = [
       // icons: {
       //     icon: {name: 'robot', path},
       // },
+      current: false,
       controls: 'wallet-footer-account',
       theme: {
         props: {
@@ -2636,6 +2638,7 @@ const accounts_option = [
       // icons: {
       //     icon: {name: 'developer', path},
       // },
+      current: false,
       controls: 'wallet-footer-account',
       theme: {
         props: {
@@ -2736,6 +2739,14 @@ function wallet () {
     shadow.append(container, footer)
     return el
 
+    function handle_change_account({from, data}) {
+      const arr = [...accounts_option]
+      arr.map( obj => {
+        obj.current = obj.list_name === data.name
+        if (obj.current) return recipients[from]( make({type: 'account-changed', data: obj}) )
+      })
+      return accounts_option = [...arr]
+    }
     function protocol (name) {
       return send => {
         recipients[name] = send
@@ -2749,6 +2760,7 @@ function wallet () {
       if (type.match(/ready/)) return 
       if (type.match(/click/)) return
       if (type.match(/switch-page/)) return recipients['wallet-container'](make({type: 'load-page', data}))
+      if (type.match(/switch-account/)) return handle_change_account({from, data})
       if (type.match(/selected/)) return console.log(from, data)
     }
   }
@@ -3614,10 +3626,6 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
             return
         }
 
-        // send account changed to ${name}-actions
-        function handle_switch_account_event (data) {
-            recipients[`${name}-actions`](make({type: 'account-changed', data}))
-        }
         function footer_protocol (name) {
             return send => {
                 recipients[name] = send
@@ -3628,14 +3636,14 @@ function i_footer ({page = '*', flow = 'ui-footer', name = '.', body = {}, to = 
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             const to = head[1]
-            console.log(from, type)
             if (type.match(/ready/)) return send(make(msg))
             if (type.match(/click/)) return send(make(msg))
             if (type.match(/expanded/)) return handle_open_action_event({name: from, type: 'show', hide: data.expanded})
             if (type.match(/collapsed/)) return handle_close_action_event({name: from, type: 'hide', hide: data})
             if (type.match(/tab-selected/)) return send( make({to, type: 'switch-page', data}) )
             if (type.match(/switch-page/)) return send(make(msg))
-            if (type.match(/switch-account/)) return handle_switch_account_event(data)
+            if (type.match(/switch-account/)) return send(make(msg))
+            if (type.match(/account-changed/)) return recipients[`${name}-actions`](make({type: 'account-changed', data}))
         }
     }
     
