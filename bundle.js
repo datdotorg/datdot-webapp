@@ -1,4 +1,734 @@
-(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({"/Users/bxbcats/prj/play/web/datdot-ui-button/src/index.js":[function(require,module,exports){
+(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/appendChild.js":[function(require,module,exports){
+var trailingNewlineRegex = /\n[\s]+$/
+var leadingNewlineRegex = /^\n[\s]+/
+var trailingSpaceRegex = /[\s]+$/
+var leadingSpaceRegex = /^[\s]+/
+var multiSpaceRegex = /[\n\s]+/g
+
+var TEXT_TAGS = [
+  'a', 'abbr', 'b', 'bdi', 'bdo', 'br', 'cite', 'data', 'dfn', 'em', 'i',
+  'kbd', 'mark', 'q', 'rp', 'rt', 'rtc', 'ruby', 's', 'amp', 'small', 'span',
+  'strong', 'sub', 'sup', 'time', 'u', 'var', 'wbr'
+]
+
+var VERBATIM_TAGS = [
+  'code', 'pre', 'textarea'
+]
+
+module.exports = function appendChild (el, childs) {
+  if (!Array.isArray(childs)) return
+
+  var nodeName = el.nodeName.toLowerCase()
+
+  var hadText = false
+  var value, leader
+
+  for (var i = 0, len = childs.length; i < len; i++) {
+    var node = childs[i]
+    if (Array.isArray(node)) {
+      appendChild(el, node)
+      continue
+    }
+
+    if (typeof node === 'number' ||
+      typeof node === 'boolean' ||
+      typeof node === 'function' ||
+      node instanceof Date ||
+      node instanceof RegExp) {
+      node = node.toString()
+    }
+
+    var lastChild = el.childNodes[el.childNodes.length - 1]
+
+    // Iterate over text nodes
+    if (typeof node === 'string') {
+      hadText = true
+
+      // If we already had text, append to the existing text
+      if (lastChild && lastChild.nodeName === '#text') {
+        lastChild.nodeValue += node
+
+      // We didn't have a text node yet, create one
+      } else {
+        node = document.createTextNode(node)
+        el.appendChild(node)
+        lastChild = node
+      }
+
+      // If this is the last of the child nodes, make sure we close it out
+      // right
+      if (i === len - 1) {
+        hadText = false
+        // Trim the child text nodes if the current node isn't a
+        // node where whitespace matters.
+        if (TEXT_TAGS.indexOf(nodeName) === -1 &&
+          VERBATIM_TAGS.indexOf(nodeName) === -1) {
+          value = lastChild.nodeValue
+            .replace(leadingNewlineRegex, '')
+            .replace(trailingSpaceRegex, '')
+            .replace(trailingNewlineRegex, '')
+            .replace(multiSpaceRegex, ' ')
+          if (value === '') {
+            el.removeChild(lastChild)
+          } else {
+            lastChild.nodeValue = value
+          }
+        } else if (VERBATIM_TAGS.indexOf(nodeName) === -1) {
+          // The very first node in the list should not have leading
+          // whitespace. Sibling text nodes should have whitespace if there
+          // was any.
+          leader = i === 0 ? '' : ' '
+          value = lastChild.nodeValue
+            .replace(leadingNewlineRegex, leader)
+            .replace(leadingSpaceRegex, ' ')
+            .replace(trailingSpaceRegex, '')
+            .replace(trailingNewlineRegex, '')
+            .replace(multiSpaceRegex, ' ')
+          lastChild.nodeValue = value
+        }
+      }
+
+    // Iterate over DOM nodes
+    } else if (node && node.nodeType) {
+      // If the last node was a text node, make sure it is properly closed out
+      if (hadText) {
+        hadText = false
+
+        // Trim the child text nodes if the current node isn't a
+        // text node or a code node
+        if (TEXT_TAGS.indexOf(nodeName) === -1 &&
+          VERBATIM_TAGS.indexOf(nodeName) === -1) {
+          value = lastChild.nodeValue
+            .replace(leadingNewlineRegex, '')
+            .replace(trailingNewlineRegex, '')
+            .replace(multiSpaceRegex, ' ')
+
+          // Remove empty text nodes, append otherwise
+          if (value === '') {
+            el.removeChild(lastChild)
+          } else {
+            lastChild.nodeValue = value
+          }
+        // Trim the child nodes if the current node is not a node
+        // where all whitespace must be preserved
+        } else if (VERBATIM_TAGS.indexOf(nodeName) === -1) {
+          value = lastChild.nodeValue
+            .replace(leadingSpaceRegex, ' ')
+            .replace(leadingNewlineRegex, '')
+            .replace(trailingNewlineRegex, '')
+            .replace(multiSpaceRegex, ' ')
+          lastChild.nodeValue = value
+        }
+      }
+
+      // Store the last nodename
+      var _nodeName = node.nodeName
+      if (_nodeName) nodeName = _nodeName.toLowerCase()
+
+      // Append the node to the DOM
+      el.appendChild(node)
+    }
+  }
+}
+
+},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/browser.js":[function(require,module,exports){
+var hyperx = require('hyperx')
+var appendChild = require('./appendChild')
+
+var SVGNS = 'http://www.w3.org/2000/svg'
+var XLINKNS = 'http://www.w3.org/1999/xlink'
+
+var BOOL_PROPS = [
+  'autofocus', 'checked', 'defaultchecked', 'disabled', 'formnovalidate',
+  'indeterminate', 'readonly', 'required', 'selected', 'willvalidate'
+]
+
+var COMMENT_TAG = '!--'
+
+var SVG_TAGS = [
+  'svg', 'altGlyph', 'altGlyphDef', 'altGlyphItem', 'animate', 'animateColor',
+  'animateMotion', 'animateTransform', 'circle', 'clipPath', 'color-profile',
+  'cursor', 'defs', 'desc', 'ellipse', 'feBlend', 'feColorMatrix',
+  'feComponentTransfer', 'feComposite', 'feConvolveMatrix',
+  'feDiffuseLighting', 'feDisplacementMap', 'feDistantLight', 'feFlood',
+  'feFuncA', 'feFuncB', 'feFuncG', 'feFuncR', 'feGaussianBlur', 'feImage',
+  'feMerge', 'feMergeNode', 'feMorphology', 'feOffset', 'fePointLight',
+  'feSpecularLighting', 'feSpotLight', 'feTile', 'feTurbulence', 'filter',
+  'font', 'font-face', 'font-face-format', 'font-face-name', 'font-face-src',
+  'font-face-uri', 'foreignObject', 'g', 'glyph', 'glyphRef', 'hkern', 'image',
+  'line', 'linearGradient', 'marker', 'mask', 'metadata', 'missing-glyph',
+  'mpath', 'path', 'pattern', 'polygon', 'polyline', 'radialGradient', 'rect',
+  'set', 'stop', 'switch', 'symbol', 'text', 'textPath', 'title', 'tref',
+  'tspan', 'use', 'view', 'vkern'
+]
+
+function belCreateElement (tag, props, children) {
+  var el
+
+  // If an svg tag, it needs a namespace
+  if (SVG_TAGS.indexOf(tag) !== -1) {
+    props.namespace = SVGNS
+  }
+
+  // If we are using a namespace
+  var ns = false
+  if (props.namespace) {
+    ns = props.namespace
+    delete props.namespace
+  }
+
+  // Create the element
+  if (ns) {
+    el = document.createElementNS(ns, tag)
+  } else if (tag === COMMENT_TAG) {
+    return document.createComment(props.comment)
+  } else {
+    el = document.createElement(tag)
+  }
+
+  // Create the properties
+  for (var p in props) {
+    if (props.hasOwnProperty(p)) {
+      var key = p.toLowerCase()
+      var val = props[p]
+      // Normalize className
+      if (key === 'classname') {
+        key = 'class'
+        p = 'class'
+      }
+      // The for attribute gets transformed to htmlFor, but we just set as for
+      if (p === 'htmlFor') {
+        p = 'for'
+      }
+      // If a property is boolean, set itself to the key
+      if (BOOL_PROPS.indexOf(key) !== -1) {
+        if (val === 'true') val = key
+        else if (val === 'false') continue
+      }
+      // If a property prefers being set directly vs setAttribute
+      if (key.slice(0, 2) === 'on') {
+        el[p] = val
+      } else {
+        if (ns) {
+          if (p === 'xlink:href') {
+            el.setAttributeNS(XLINKNS, p, val)
+          } else if (/^xmlns($|:)/i.test(p)) {
+            // skip xmlns definitions
+          } else {
+            el.setAttributeNS(null, p, val)
+          }
+        } else {
+          el.setAttribute(p, val)
+        }
+      }
+    }
+  }
+
+  appendChild(el, children)
+  return el
+}
+
+module.exports = hyperx(belCreateElement, {comments: true})
+module.exports.default = module.exports
+module.exports.createElement = belCreateElement
+
+},{"./appendChild":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/appendChild.js","hyperx":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/hyperx/index.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs-inject/csjs.js":[function(require,module,exports){
+(function (global){(function (){
+'use strict';
+
+var csjs = require('csjs');
+var insertCss = require('insert-css');
+
+function csjsInserter() {
+  var args = Array.prototype.slice.call(arguments);
+  var result = csjs.apply(null, args);
+  if (global.document) {
+    insertCss(csjs.getCss(result));
+  }
+  return result;
+}
+
+module.exports = csjsInserter;
+
+}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"csjs":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/index.js","insert-css":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/insert-css/index.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs-inject/get-css.js":[function(require,module,exports){
+'use strict';
+
+module.exports = require('csjs/get-css');
+
+},{"csjs/get-css":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/get-css.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs-inject/index.js":[function(require,module,exports){
+'use strict';
+
+var csjs = require('./csjs');
+
+module.exports = csjs;
+module.exports.csjs = csjs;
+module.exports.getCss = require('./get-css');
+
+},{"./csjs":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs-inject/csjs.js","./get-css":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs-inject/get-css.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/csjs.js":[function(require,module,exports){
+'use strict';
+
+module.exports = require('./lib/csjs');
+
+},{"./lib/csjs":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/csjs.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/get-css.js":[function(require,module,exports){
+'use strict';
+
+module.exports = require('./lib/get-css');
+
+},{"./lib/get-css":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/get-css.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/index.js":[function(require,module,exports){
+'use strict';
+
+var csjs = require('./csjs');
+
+module.exports = csjs();
+module.exports.csjs = csjs;
+module.exports.noScope = csjs({ noscope: true });
+module.exports.getCss = require('./get-css');
+
+},{"./csjs":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/csjs.js","./get-css":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/get-css.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/base62-encode.js":[function(require,module,exports){
+'use strict';
+
+/**
+ * base62 encode implementation based on base62 module:
+ * https://github.com/andrew/base62.js
+ */
+
+var CHARS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+module.exports = function encode(integer) {
+  if (integer === 0) {
+    return '0';
+  }
+  var str = '';
+  while (integer > 0) {
+    str = CHARS[integer % 62] + str;
+    integer = Math.floor(integer / 62);
+  }
+  return str;
+};
+
+},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/build-exports.js":[function(require,module,exports){
+'use strict';
+
+var makeComposition = require('./composition').makeComposition;
+
+module.exports = function createExports(classes, keyframes, compositions) {
+  var keyframesObj = Object.keys(keyframes).reduce(function(acc, key) {
+    var val = keyframes[key];
+    acc[val] = makeComposition([key], [val], true);
+    return acc;
+  }, {});
+
+  var exports = Object.keys(classes).reduce(function(acc, key) {
+    var val = classes[key];
+    var composition = compositions[key];
+    var extended = composition ? getClassChain(composition) : [];
+    var allClasses = [key].concat(extended);
+    var unscoped = allClasses.map(function(name) {
+      return classes[name] ? classes[name] : name;
+    });
+    acc[val] = makeComposition(allClasses, unscoped);
+    return acc;
+  }, keyframesObj);
+
+  return exports;
+}
+
+function getClassChain(obj) {
+  var visited = {}, acc = [];
+
+  function traverse(obj) {
+    return Object.keys(obj).forEach(function(key) {
+      if (!visited[key]) {
+        visited[key] = true;
+        acc.push(key);
+        traverse(obj[key]);
+      }
+    });
+  }
+
+  traverse(obj);
+  return acc;
+}
+
+},{"./composition":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/composition.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/composition.js":[function(require,module,exports){
+'use strict';
+
+module.exports = {
+  makeComposition: makeComposition,
+  isComposition: isComposition,
+  ignoreComposition: ignoreComposition
+};
+
+/**
+ * Returns an immutable composition object containing the given class names
+ * @param  {array} classNames - The input array of class names
+ * @return {Composition}      - An immutable object that holds multiple
+ *                              representations of the class composition
+ */
+function makeComposition(classNames, unscoped, isAnimation) {
+  var classString = classNames.join(' ');
+  return Object.create(Composition.prototype, {
+    classNames: { // the original array of class names
+      value: Object.freeze(classNames),
+      configurable: false,
+      writable: false,
+      enumerable: true
+    },
+    unscoped: { // the original array of class names
+      value: Object.freeze(unscoped),
+      configurable: false,
+      writable: false,
+      enumerable: true
+    },
+    className: { // space-separated class string for use in HTML
+      value: classString,
+      configurable: false,
+      writable: false,
+      enumerable: true
+    },
+    selector: { // comma-separated, period-prefixed string for use in CSS
+      value: classNames.map(function(name) {
+        return isAnimation ? name : '.' + name;
+      }).join(', '),
+      configurable: false,
+      writable: false,
+      enumerable: true
+    },
+    toString: { // toString() method, returns class string for use in HTML
+      value: function() {
+        return classString;
+      },
+      configurable: false,
+      writeable: false,
+      enumerable: false
+    }
+  });
+}
+
+/**
+ * Returns whether the input value is a Composition
+ * @param value      - value to check
+ * @return {boolean} - whether value is a Composition or not
+ */
+function isComposition(value) {
+  return value instanceof Composition;
+}
+
+function ignoreComposition(values) {
+  return values.reduce(function(acc, val) {
+    if (isComposition(val)) {
+      val.classNames.forEach(function(name, i) {
+        acc[name] = val.unscoped[i];
+      });
+    }
+    return acc;
+  }, {});
+}
+
+/**
+ * Private constructor for use in `instanceof` checks
+ */
+function Composition() {}
+
+},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/csjs.js":[function(require,module,exports){
+'use strict';
+
+var extractExtends = require('./css-extract-extends');
+var composition = require('./composition');
+var isComposition = composition.isComposition;
+var ignoreComposition = composition.ignoreComposition;
+var buildExports = require('./build-exports');
+var scopify = require('./scopeify');
+var cssKey = require('./css-key');
+var extractExports = require('./extract-exports');
+
+module.exports = function csjsTemplate(opts) {
+  opts = (typeof opts === 'undefined') ? {} : opts;
+  var noscope = (typeof opts.noscope === 'undefined') ? false : opts.noscope;
+
+  return function csjsHandler(strings, values) {
+    // Fast path to prevent arguments deopt
+    var values = Array(arguments.length - 1);
+    for (var i = 1; i < arguments.length; i++) {
+      values[i - 1] = arguments[i];
+    }
+    var css = joiner(strings, values.map(selectorize));
+    var ignores = ignoreComposition(values);
+
+    var scope = noscope ? extractExports(css) : scopify(css, ignores);
+    var extracted = extractExtends(scope.css);
+    var localClasses = without(scope.classes, ignores);
+    var localKeyframes = without(scope.keyframes, ignores);
+    var compositions = extracted.compositions;
+
+    var exports = buildExports(localClasses, localKeyframes, compositions);
+
+    return Object.defineProperty(exports, cssKey, {
+      enumerable: false,
+      configurable: false,
+      writeable: false,
+      value: extracted.css
+    });
+  }
+}
+
+/**
+ * Replaces class compositions with comma seperated class selectors
+ * @param  value - the potential class composition
+ * @return       - the original value or the selectorized class composition
+ */
+function selectorize(value) {
+  return isComposition(value) ? value.selector : value;
+}
+
+/**
+ * Joins template string literals and values
+ * @param  {array} strings - array of strings
+ * @param  {array} values  - array of values
+ * @return {string}        - strings and values joined
+ */
+function joiner(strings, values) {
+  return strings.map(function(str, i) {
+    return (i !== values.length) ? str + values[i] : str;
+  }).join('');
+}
+
+/**
+ * Returns first object without keys of second
+ * @param  {object} obj      - source object
+ * @param  {object} unwanted - object with unwanted keys
+ * @return {object}          - first object without unwanted keys
+ */
+function without(obj, unwanted) {
+  return Object.keys(obj).reduce(function(acc, key) {
+    if (!unwanted[key]) {
+      acc[key] = obj[key];
+    }
+    return acc;
+  }, {});
+}
+
+},{"./build-exports":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/build-exports.js","./composition":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/composition.js","./css-extract-extends":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/css-extract-extends.js","./css-key":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/css-key.js","./extract-exports":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/extract-exports.js","./scopeify":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/scopeify.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/css-extract-extends.js":[function(require,module,exports){
+'use strict';
+
+var makeComposition = require('./composition').makeComposition;
+
+var regex = /\.([^\s]+)(\s+)(extends\s+)(\.[^{]+)/g;
+
+module.exports = function extractExtends(css) {
+  var found, matches = [];
+  while (found = regex.exec(css)) {
+    matches.unshift(found);
+  }
+
+  function extractCompositions(acc, match) {
+    var extendee = getClassName(match[1]);
+    var keyword = match[3];
+    var extended = match[4];
+
+    // remove from output css
+    var index = match.index + match[1].length + match[2].length;
+    var len = keyword.length + extended.length;
+    acc.css = acc.css.slice(0, index) + " " + acc.css.slice(index + len + 1);
+
+    var extendedClasses = splitter(extended);
+
+    extendedClasses.forEach(function(className) {
+      if (!acc.compositions[extendee]) {
+        acc.compositions[extendee] = {};
+      }
+      if (!acc.compositions[className]) {
+        acc.compositions[className] = {};
+      }
+      acc.compositions[extendee][className] = acc.compositions[className];
+    });
+    return acc;
+  }
+
+  return matches.reduce(extractCompositions, {
+    css: css,
+    compositions: {}
+  });
+
+};
+
+function splitter(match) {
+  return match.split(',').map(getClassName);
+}
+
+function getClassName(str) {
+  var trimmed = str.trim();
+  return trimmed[0] === '.' ? trimmed.substr(1) : trimmed;
+}
+
+},{"./composition":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/composition.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/css-key.js":[function(require,module,exports){
+'use strict';
+
+/**
+ * CSS identifiers with whitespace are invalid
+ * Hence this key will not cause a collision
+ */
+
+module.exports = ' css ';
+
+},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/extract-exports.js":[function(require,module,exports){
+'use strict';
+
+var regex = require('./regex');
+var classRegex = regex.classRegex;
+var keyframesRegex = regex.keyframesRegex;
+
+module.exports = extractExports;
+
+function extractExports(css) {
+  return {
+    css: css,
+    keyframes: getExport(css, keyframesRegex),
+    classes: getExport(css, classRegex)
+  };
+}
+
+function getExport(css, regex) {
+  var prop = {};
+  var match;
+  while((match = regex.exec(css)) !== null) {
+    var name = match[2];
+    prop[name] = name;
+  }
+  return prop;
+}
+
+},{"./regex":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/regex.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/get-css.js":[function(require,module,exports){
+'use strict';
+
+var cssKey = require('./css-key');
+
+module.exports = function getCss(csjs) {
+  return csjs[cssKey];
+};
+
+},{"./css-key":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/css-key.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/hash-string.js":[function(require,module,exports){
+'use strict';
+
+/**
+ * djb2 string hash implementation based on string-hash module:
+ * https://github.com/darkskyapp/string-hash
+ */
+
+module.exports = function hashStr(str) {
+  var hash = 5381;
+  var i = str.length;
+
+  while (i) {
+    hash = (hash * 33) ^ str.charCodeAt(--i)
+  }
+  return hash >>> 0;
+};
+
+},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/regex.js":[function(require,module,exports){
+'use strict';
+
+var findClasses = /(\.)(?!\d)([^\s\.,{\[>+~#:)]*)(?![^{]*})/.source;
+var findKeyframes = /(@\S*keyframes\s*)([^{\s]*)/.source;
+var ignoreComments = /(?!(?:[^*/]|\*[^/]|\/[^*])*\*+\/)/.source;
+
+var classRegex = new RegExp(findClasses + ignoreComments, 'g');
+var keyframesRegex = new RegExp(findKeyframes + ignoreComments, 'g');
+
+module.exports = {
+  classRegex: classRegex,
+  keyframesRegex: keyframesRegex,
+  ignoreComments: ignoreComments,
+};
+
+},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/replace-animations.js":[function(require,module,exports){
+var ignoreComments = require('./regex').ignoreComments;
+
+module.exports = replaceAnimations;
+
+function replaceAnimations(result) {
+  var animations = Object.keys(result.keyframes).reduce(function(acc, key) {
+    acc[result.keyframes[key]] = key;
+    return acc;
+  }, {});
+  var unscoped = Object.keys(animations);
+
+  if (unscoped.length) {
+    var regexStr = '((?:animation|animation-name)\\s*:[^};]*)('
+      + unscoped.join('|') + ')([;\\s])' + ignoreComments;
+    var regex = new RegExp(regexStr, 'g');
+
+    var replaced = result.css.replace(regex, function(match, preamble, name, ending) {
+      return preamble + animations[name] + ending;
+    });
+
+    return {
+      css: replaced,
+      keyframes: result.keyframes,
+      classes: result.classes
+    }
+  }
+
+  return result;
+}
+
+},{"./regex":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/regex.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/scoped-name.js":[function(require,module,exports){
+'use strict';
+
+var encode = require('./base62-encode');
+var hash = require('./hash-string');
+
+module.exports = function fileScoper(fileSrc) {
+  var suffix = encode(hash(fileSrc));
+
+  return function scopedName(name) {
+    return name + '_' + suffix;
+  }
+};
+
+},{"./base62-encode":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/base62-encode.js","./hash-string":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/hash-string.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/scopeify.js":[function(require,module,exports){
+'use strict';
+
+var fileScoper = require('./scoped-name');
+var replaceAnimations = require('./replace-animations');
+var regex = require('./regex');
+var classRegex = regex.classRegex;
+var keyframesRegex = regex.keyframesRegex;
+
+module.exports = scopify;
+
+function scopify(css, ignores) {
+  var makeScopedName = fileScoper(css);
+  var replacers = {
+    classes: classRegex,
+    keyframes: keyframesRegex
+  };
+
+  function scopeCss(result, key) {
+    var replacer = replacers[key];
+    function replaceFn(fullMatch, prefix, name) {
+      var scopedName = ignores[name] ? name : makeScopedName(name);
+      result[key][scopedName] = name;
+      return prefix + scopedName;
+    }
+    return {
+      css: result.css.replace(replacer, replaceFn),
+      keyframes: result.keyframes,
+      classes: result.classes
+    };
+  }
+
+  var result = Object.keys(replacers).reduce(scopeCss, {
+    css: css,
+    keyframes: {},
+    classes: {}
+  });
+
+  return replaceAnimations(result);
+}
+
+},{"./regex":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/regex.js","./replace-animations":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/replace-animations.js","./scoped-name":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/scoped-name.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/index.js":[function(require,module,exports){
 const style_sheet = require('support-style-sheet')
 const message_maker = require('message-maker')
 const make_img = require('make-image')
@@ -910,7 +1640,7 @@ function i_button (opt, protocol) {
 
     return widget()
 }
-},{"make-element":"/Users/bxbcats/prj/play/web/datdot-ui-button/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-ui-button/src/node_modules/make-grid.js","make-icon":"/Users/bxbcats/prj/play/web/datdot-ui-button/src/node_modules/make-icon.js","make-image":"/Users/bxbcats/prj/play/web/datdot-ui-button/src/node_modules/make-image.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-ui-button/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-ui-button/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-ui-button/src/node_modules/make-element.js":[function(require,module,exports){
+},{"make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/make-grid.js","make-icon":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/make-icon.js","make-image":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/make-image.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/make-element.js":[function(require,module,exports){
 module.exports = make_element
 
 function make_element({name = '', classlist = null, role }) {
@@ -931,7 +1661,7 @@ function make_element({name = '', classlist = null, role }) {
 }
 
 
-},{}],"/Users/bxbcats/prj/play/web/datdot-ui-button/src/node_modules/make-grid.js":[function(require,module,exports){
+},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/make-grid.js":[function(require,module,exports){
 module.exports = make_grid
 
 function make_grid (opts = {}) {
@@ -1008,7 +1738,7 @@ function make_grid (opts = {}) {
         return style += `${grid_auto_flow}${grid_auto_rows}${grid_auto_columns}`
     }
 }
-},{}],"/Users/bxbcats/prj/play/web/datdot-ui-button/src/node_modules/make-icon.js":[function(require,module,exports){
+},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/make-icon.js":[function(require,module,exports){
 const i_icon = require('datdot-ui-icon')
 
 module.exports = {main_icon, select_icon, list_icon}
@@ -1029,7 +1759,7 @@ function list_icon ({name = 'check', path} ) {
 }
 
 
-},{"datdot-ui-icon":"/Users/bxbcats/prj/play/web/datdot-ui-icon/src/index.js"}],"/Users/bxbcats/prj/play/web/datdot-ui-button/src/node_modules/make-image.js":[function(require,module,exports){
+},{"datdot-ui-icon":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-icon/src/index.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/make-image.js":[function(require,module,exports){
 module.exports = img
 
 function img ({src, alt}) {
@@ -1038,7 +1768,7 @@ function img ({src, alt}) {
     img.setAttribute('alt', alt)
     return img
 }
-},{}],"/Users/bxbcats/prj/play/web/datdot-ui-button/src/node_modules/message-maker.js":[function(require,module,exports){
+},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/message-maker.js":[function(require,module,exports){
 module.exports = function message_maker (from) {
     let msg_id = 0
     return function make ({to, type, data = null, refs = []}) {
@@ -1047,7 +1777,7 @@ module.exports = function message_maker (from) {
         return message
     }
 }
-},{}],"/Users/bxbcats/prj/play/web/datdot-ui-button/src/node_modules/support-style-sheet.js":[function(require,module,exports){
+},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/support-style-sheet.js":[function(require,module,exports){
 module.exports = support_style_sheet
 function support_style_sheet (root, style) {
     return (() => {
@@ -1063,7 +1793,7 @@ function support_style_sheet (root, style) {
         }
     })()
 }
-},{}],"/Users/bxbcats/prj/play/web/datdot-ui-icon/src/index.js":[function(require,module,exports){
+},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-icon/src/index.js":[function(require,module,exports){
 const style_sheet = require('support-style-sheet')
 const svg = require('svg')
 
@@ -1119,9 +1849,9 @@ module.exports = ({name, path, is_shadow = false, theme}) => {
     return symbol
 }
 
-},{"support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-ui-icon/src/node_modules/support-style-sheet.js","svg":"/Users/bxbcats/prj/play/web/datdot-ui-icon/src/node_modules/svg.js"}],"/Users/bxbcats/prj/play/web/datdot-ui-icon/src/node_modules/support-style-sheet.js":[function(require,module,exports){
-arguments[4]["/Users/bxbcats/prj/play/web/datdot-ui-button/src/node_modules/support-style-sheet.js"][0].apply(exports,arguments)
-},{}],"/Users/bxbcats/prj/play/web/datdot-ui-icon/src/node_modules/svg.js":[function(require,module,exports){
+},{"support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-icon/src/node_modules/support-style-sheet.js","svg":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-icon/src/node_modules/svg.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-icon/src/node_modules/support-style-sheet.js":[function(require,module,exports){
+arguments[4]["/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/support-style-sheet.js"][0].apply(exports,arguments)
+},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-icon/src/node_modules/svg.js":[function(require,module,exports){
 module.exports = svg
 function svg (path) {
     const span = document.createElement('span')
@@ -1135,7 +1865,7 @@ function svg (path) {
     }
     return span
 }   
-},{}],"/Users/bxbcats/prj/play/web/datdot-ui-list/src/index.js":[function(require,module,exports){
+},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-list/src/index.js":[function(require,module,exports){
 const style_sheet = require('support-style-sheet')
 const {i_button, i_link} = require('datdot-ui-button')
 const button = i_button
@@ -1511,743 +2241,13 @@ function i_list (opts = {}, protocol) {
 
     return widget()
 }
-},{"datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-ui-button/src/index.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-ui-list/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-ui-list/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-ui-list/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-ui-list/src/node_modules/make-grid.js":[function(require,module,exports){
-arguments[4]["/Users/bxbcats/prj/play/web/datdot-ui-button/src/node_modules/make-grid.js"][0].apply(exports,arguments)
-},{}],"/Users/bxbcats/prj/play/web/datdot-ui-list/src/node_modules/message-maker.js":[function(require,module,exports){
-arguments[4]["/Users/bxbcats/prj/play/web/datdot-ui-button/src/node_modules/message-maker.js"][0].apply(exports,arguments)
-},{}],"/Users/bxbcats/prj/play/web/datdot-ui-list/src/node_modules/support-style-sheet.js":[function(require,module,exports){
-arguments[4]["/Users/bxbcats/prj/play/web/datdot-ui-button/src/node_modules/support-style-sheet.js"][0].apply(exports,arguments)
-},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/appendChild.js":[function(require,module,exports){
-var trailingNewlineRegex = /\n[\s]+$/
-var leadingNewlineRegex = /^\n[\s]+/
-var trailingSpaceRegex = /[\s]+$/
-var leadingSpaceRegex = /^[\s]+/
-var multiSpaceRegex = /[\n\s]+/g
-
-var TEXT_TAGS = [
-  'a', 'abbr', 'b', 'bdi', 'bdo', 'br', 'cite', 'data', 'dfn', 'em', 'i',
-  'kbd', 'mark', 'q', 'rp', 'rt', 'rtc', 'ruby', 's', 'amp', 'small', 'span',
-  'strong', 'sub', 'sup', 'time', 'u', 'var', 'wbr'
-]
-
-var VERBATIM_TAGS = [
-  'code', 'pre', 'textarea'
-]
-
-module.exports = function appendChild (el, childs) {
-  if (!Array.isArray(childs)) return
-
-  var nodeName = el.nodeName.toLowerCase()
-
-  var hadText = false
-  var value, leader
-
-  for (var i = 0, len = childs.length; i < len; i++) {
-    var node = childs[i]
-    if (Array.isArray(node)) {
-      appendChild(el, node)
-      continue
-    }
-
-    if (typeof node === 'number' ||
-      typeof node === 'boolean' ||
-      typeof node === 'function' ||
-      node instanceof Date ||
-      node instanceof RegExp) {
-      node = node.toString()
-    }
-
-    var lastChild = el.childNodes[el.childNodes.length - 1]
-
-    // Iterate over text nodes
-    if (typeof node === 'string') {
-      hadText = true
-
-      // If we already had text, append to the existing text
-      if (lastChild && lastChild.nodeName === '#text') {
-        lastChild.nodeValue += node
-
-      // We didn't have a text node yet, create one
-      } else {
-        node = document.createTextNode(node)
-        el.appendChild(node)
-        lastChild = node
-      }
-
-      // If this is the last of the child nodes, make sure we close it out
-      // right
-      if (i === len - 1) {
-        hadText = false
-        // Trim the child text nodes if the current node isn't a
-        // node where whitespace matters.
-        if (TEXT_TAGS.indexOf(nodeName) === -1 &&
-          VERBATIM_TAGS.indexOf(nodeName) === -1) {
-          value = lastChild.nodeValue
-            .replace(leadingNewlineRegex, '')
-            .replace(trailingSpaceRegex, '')
-            .replace(trailingNewlineRegex, '')
-            .replace(multiSpaceRegex, ' ')
-          if (value === '') {
-            el.removeChild(lastChild)
-          } else {
-            lastChild.nodeValue = value
-          }
-        } else if (VERBATIM_TAGS.indexOf(nodeName) === -1) {
-          // The very first node in the list should not have leading
-          // whitespace. Sibling text nodes should have whitespace if there
-          // was any.
-          leader = i === 0 ? '' : ' '
-          value = lastChild.nodeValue
-            .replace(leadingNewlineRegex, leader)
-            .replace(leadingSpaceRegex, ' ')
-            .replace(trailingSpaceRegex, '')
-            .replace(trailingNewlineRegex, '')
-            .replace(multiSpaceRegex, ' ')
-          lastChild.nodeValue = value
-        }
-      }
-
-    // Iterate over DOM nodes
-    } else if (node && node.nodeType) {
-      // If the last node was a text node, make sure it is properly closed out
-      if (hadText) {
-        hadText = false
-
-        // Trim the child text nodes if the current node isn't a
-        // text node or a code node
-        if (TEXT_TAGS.indexOf(nodeName) === -1 &&
-          VERBATIM_TAGS.indexOf(nodeName) === -1) {
-          value = lastChild.nodeValue
-            .replace(leadingNewlineRegex, '')
-            .replace(trailingNewlineRegex, '')
-            .replace(multiSpaceRegex, ' ')
-
-          // Remove empty text nodes, append otherwise
-          if (value === '') {
-            el.removeChild(lastChild)
-          } else {
-            lastChild.nodeValue = value
-          }
-        // Trim the child nodes if the current node is not a node
-        // where all whitespace must be preserved
-        } else if (VERBATIM_TAGS.indexOf(nodeName) === -1) {
-          value = lastChild.nodeValue
-            .replace(leadingSpaceRegex, ' ')
-            .replace(leadingNewlineRegex, '')
-            .replace(trailingNewlineRegex, '')
-            .replace(multiSpaceRegex, ' ')
-          lastChild.nodeValue = value
-        }
-      }
-
-      // Store the last nodename
-      var _nodeName = node.nodeName
-      if (_nodeName) nodeName = _nodeName.toLowerCase()
-
-      // Append the node to the DOM
-      el.appendChild(node)
-    }
-  }
-}
-
-},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/browser.js":[function(require,module,exports){
-var hyperx = require('hyperx')
-var appendChild = require('./appendChild')
-
-var SVGNS = 'http://www.w3.org/2000/svg'
-var XLINKNS = 'http://www.w3.org/1999/xlink'
-
-var BOOL_PROPS = [
-  'autofocus', 'checked', 'defaultchecked', 'disabled', 'formnovalidate',
-  'indeterminate', 'readonly', 'required', 'selected', 'willvalidate'
-]
-
-var COMMENT_TAG = '!--'
-
-var SVG_TAGS = [
-  'svg', 'altGlyph', 'altGlyphDef', 'altGlyphItem', 'animate', 'animateColor',
-  'animateMotion', 'animateTransform', 'circle', 'clipPath', 'color-profile',
-  'cursor', 'defs', 'desc', 'ellipse', 'feBlend', 'feColorMatrix',
-  'feComponentTransfer', 'feComposite', 'feConvolveMatrix',
-  'feDiffuseLighting', 'feDisplacementMap', 'feDistantLight', 'feFlood',
-  'feFuncA', 'feFuncB', 'feFuncG', 'feFuncR', 'feGaussianBlur', 'feImage',
-  'feMerge', 'feMergeNode', 'feMorphology', 'feOffset', 'fePointLight',
-  'feSpecularLighting', 'feSpotLight', 'feTile', 'feTurbulence', 'filter',
-  'font', 'font-face', 'font-face-format', 'font-face-name', 'font-face-src',
-  'font-face-uri', 'foreignObject', 'g', 'glyph', 'glyphRef', 'hkern', 'image',
-  'line', 'linearGradient', 'marker', 'mask', 'metadata', 'missing-glyph',
-  'mpath', 'path', 'pattern', 'polygon', 'polyline', 'radialGradient', 'rect',
-  'set', 'stop', 'switch', 'symbol', 'text', 'textPath', 'title', 'tref',
-  'tspan', 'use', 'view', 'vkern'
-]
-
-function belCreateElement (tag, props, children) {
-  var el
-
-  // If an svg tag, it needs a namespace
-  if (SVG_TAGS.indexOf(tag) !== -1) {
-    props.namespace = SVGNS
-  }
-
-  // If we are using a namespace
-  var ns = false
-  if (props.namespace) {
-    ns = props.namespace
-    delete props.namespace
-  }
-
-  // Create the element
-  if (ns) {
-    el = document.createElementNS(ns, tag)
-  } else if (tag === COMMENT_TAG) {
-    return document.createComment(props.comment)
-  } else {
-    el = document.createElement(tag)
-  }
-
-  // Create the properties
-  for (var p in props) {
-    if (props.hasOwnProperty(p)) {
-      var key = p.toLowerCase()
-      var val = props[p]
-      // Normalize className
-      if (key === 'classname') {
-        key = 'class'
-        p = 'class'
-      }
-      // The for attribute gets transformed to htmlFor, but we just set as for
-      if (p === 'htmlFor') {
-        p = 'for'
-      }
-      // If a property is boolean, set itself to the key
-      if (BOOL_PROPS.indexOf(key) !== -1) {
-        if (val === 'true') val = key
-        else if (val === 'false') continue
-      }
-      // If a property prefers being set directly vs setAttribute
-      if (key.slice(0, 2) === 'on') {
-        el[p] = val
-      } else {
-        if (ns) {
-          if (p === 'xlink:href') {
-            el.setAttributeNS(XLINKNS, p, val)
-          } else if (/^xmlns($|:)/i.test(p)) {
-            // skip xmlns definitions
-          } else {
-            el.setAttributeNS(null, p, val)
-          }
-        } else {
-          el.setAttribute(p, val)
-        }
-      }
-    }
-  }
-
-  appendChild(el, children)
-  return el
-}
-
-module.exports = hyperx(belCreateElement, {comments: true})
-module.exports.default = module.exports
-module.exports.createElement = belCreateElement
-
-},{"./appendChild":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/bel/appendChild.js","hyperx":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/hyperx/index.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs-inject/csjs.js":[function(require,module,exports){
-(function (global){(function (){
-'use strict';
-
-var csjs = require('csjs');
-var insertCss = require('insert-css');
-
-function csjsInserter() {
-  var args = Array.prototype.slice.call(arguments);
-  var result = csjs.apply(null, args);
-  if (global.document) {
-    insertCss(csjs.getCss(result));
-  }
-  return result;
-}
-
-module.exports = csjsInserter;
-
-}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"csjs":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/index.js","insert-css":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/insert-css/index.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs-inject/get-css.js":[function(require,module,exports){
-'use strict';
-
-module.exports = require('csjs/get-css');
-
-},{"csjs/get-css":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/get-css.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs-inject/index.js":[function(require,module,exports){
-'use strict';
-
-var csjs = require('./csjs');
-
-module.exports = csjs;
-module.exports.csjs = csjs;
-module.exports.getCss = require('./get-css');
-
-},{"./csjs":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs-inject/csjs.js","./get-css":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs-inject/get-css.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/csjs.js":[function(require,module,exports){
-'use strict';
-
-module.exports = require('./lib/csjs');
-
-},{"./lib/csjs":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/csjs.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/get-css.js":[function(require,module,exports){
-'use strict';
-
-module.exports = require('./lib/get-css');
-
-},{"./lib/get-css":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/get-css.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/index.js":[function(require,module,exports){
-'use strict';
-
-var csjs = require('./csjs');
-
-module.exports = csjs();
-module.exports.csjs = csjs;
-module.exports.noScope = csjs({ noscope: true });
-module.exports.getCss = require('./get-css');
-
-},{"./csjs":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/csjs.js","./get-css":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/get-css.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/base62-encode.js":[function(require,module,exports){
-'use strict';
-
-/**
- * base62 encode implementation based on base62 module:
- * https://github.com/andrew/base62.js
- */
-
-var CHARS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-module.exports = function encode(integer) {
-  if (integer === 0) {
-    return '0';
-  }
-  var str = '';
-  while (integer > 0) {
-    str = CHARS[integer % 62] + str;
-    integer = Math.floor(integer / 62);
-  }
-  return str;
-};
-
-},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/build-exports.js":[function(require,module,exports){
-'use strict';
-
-var makeComposition = require('./composition').makeComposition;
-
-module.exports = function createExports(classes, keyframes, compositions) {
-  var keyframesObj = Object.keys(keyframes).reduce(function(acc, key) {
-    var val = keyframes[key];
-    acc[val] = makeComposition([key], [val], true);
-    return acc;
-  }, {});
-
-  var exports = Object.keys(classes).reduce(function(acc, key) {
-    var val = classes[key];
-    var composition = compositions[key];
-    var extended = composition ? getClassChain(composition) : [];
-    var allClasses = [key].concat(extended);
-    var unscoped = allClasses.map(function(name) {
-      return classes[name] ? classes[name] : name;
-    });
-    acc[val] = makeComposition(allClasses, unscoped);
-    return acc;
-  }, keyframesObj);
-
-  return exports;
-}
-
-function getClassChain(obj) {
-  var visited = {}, acc = [];
-
-  function traverse(obj) {
-    return Object.keys(obj).forEach(function(key) {
-      if (!visited[key]) {
-        visited[key] = true;
-        acc.push(key);
-        traverse(obj[key]);
-      }
-    });
-  }
-
-  traverse(obj);
-  return acc;
-}
-
-},{"./composition":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/composition.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/composition.js":[function(require,module,exports){
-'use strict';
-
-module.exports = {
-  makeComposition: makeComposition,
-  isComposition: isComposition,
-  ignoreComposition: ignoreComposition
-};
-
-/**
- * Returns an immutable composition object containing the given class names
- * @param  {array} classNames - The input array of class names
- * @return {Composition}      - An immutable object that holds multiple
- *                              representations of the class composition
- */
-function makeComposition(classNames, unscoped, isAnimation) {
-  var classString = classNames.join(' ');
-  return Object.create(Composition.prototype, {
-    classNames: { // the original array of class names
-      value: Object.freeze(classNames),
-      configurable: false,
-      writable: false,
-      enumerable: true
-    },
-    unscoped: { // the original array of class names
-      value: Object.freeze(unscoped),
-      configurable: false,
-      writable: false,
-      enumerable: true
-    },
-    className: { // space-separated class string for use in HTML
-      value: classString,
-      configurable: false,
-      writable: false,
-      enumerable: true
-    },
-    selector: { // comma-separated, period-prefixed string for use in CSS
-      value: classNames.map(function(name) {
-        return isAnimation ? name : '.' + name;
-      }).join(', '),
-      configurable: false,
-      writable: false,
-      enumerable: true
-    },
-    toString: { // toString() method, returns class string for use in HTML
-      value: function() {
-        return classString;
-      },
-      configurable: false,
-      writeable: false,
-      enumerable: false
-    }
-  });
-}
-
-/**
- * Returns whether the input value is a Composition
- * @param value      - value to check
- * @return {boolean} - whether value is a Composition or not
- */
-function isComposition(value) {
-  return value instanceof Composition;
-}
-
-function ignoreComposition(values) {
-  return values.reduce(function(acc, val) {
-    if (isComposition(val)) {
-      val.classNames.forEach(function(name, i) {
-        acc[name] = val.unscoped[i];
-      });
-    }
-    return acc;
-  }, {});
-}
-
-/**
- * Private constructor for use in `instanceof` checks
- */
-function Composition() {}
-
-},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/csjs.js":[function(require,module,exports){
-'use strict';
-
-var extractExtends = require('./css-extract-extends');
-var composition = require('./composition');
-var isComposition = composition.isComposition;
-var ignoreComposition = composition.ignoreComposition;
-var buildExports = require('./build-exports');
-var scopify = require('./scopeify');
-var cssKey = require('./css-key');
-var extractExports = require('./extract-exports');
-
-module.exports = function csjsTemplate(opts) {
-  opts = (typeof opts === 'undefined') ? {} : opts;
-  var noscope = (typeof opts.noscope === 'undefined') ? false : opts.noscope;
-
-  return function csjsHandler(strings, values) {
-    // Fast path to prevent arguments deopt
-    var values = Array(arguments.length - 1);
-    for (var i = 1; i < arguments.length; i++) {
-      values[i - 1] = arguments[i];
-    }
-    var css = joiner(strings, values.map(selectorize));
-    var ignores = ignoreComposition(values);
-
-    var scope = noscope ? extractExports(css) : scopify(css, ignores);
-    var extracted = extractExtends(scope.css);
-    var localClasses = without(scope.classes, ignores);
-    var localKeyframes = without(scope.keyframes, ignores);
-    var compositions = extracted.compositions;
-
-    var exports = buildExports(localClasses, localKeyframes, compositions);
-
-    return Object.defineProperty(exports, cssKey, {
-      enumerable: false,
-      configurable: false,
-      writeable: false,
-      value: extracted.css
-    });
-  }
-}
-
-/**
- * Replaces class compositions with comma seperated class selectors
- * @param  value - the potential class composition
- * @return       - the original value or the selectorized class composition
- */
-function selectorize(value) {
-  return isComposition(value) ? value.selector : value;
-}
-
-/**
- * Joins template string literals and values
- * @param  {array} strings - array of strings
- * @param  {array} values  - array of values
- * @return {string}        - strings and values joined
- */
-function joiner(strings, values) {
-  return strings.map(function(str, i) {
-    return (i !== values.length) ? str + values[i] : str;
-  }).join('');
-}
-
-/**
- * Returns first object without keys of second
- * @param  {object} obj      - source object
- * @param  {object} unwanted - object with unwanted keys
- * @return {object}          - first object without unwanted keys
- */
-function without(obj, unwanted) {
-  return Object.keys(obj).reduce(function(acc, key) {
-    if (!unwanted[key]) {
-      acc[key] = obj[key];
-    }
-    return acc;
-  }, {});
-}
-
-},{"./build-exports":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/build-exports.js","./composition":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/composition.js","./css-extract-extends":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/css-extract-extends.js","./css-key":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/css-key.js","./extract-exports":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/extract-exports.js","./scopeify":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/scopeify.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/css-extract-extends.js":[function(require,module,exports){
-'use strict';
-
-var makeComposition = require('./composition').makeComposition;
-
-var regex = /\.([^\s]+)(\s+)(extends\s+)(\.[^{]+)/g;
-
-module.exports = function extractExtends(css) {
-  var found, matches = [];
-  while (found = regex.exec(css)) {
-    matches.unshift(found);
-  }
-
-  function extractCompositions(acc, match) {
-    var extendee = getClassName(match[1]);
-    var keyword = match[3];
-    var extended = match[4];
-
-    // remove from output css
-    var index = match.index + match[1].length + match[2].length;
-    var len = keyword.length + extended.length;
-    acc.css = acc.css.slice(0, index) + " " + acc.css.slice(index + len + 1);
-
-    var extendedClasses = splitter(extended);
-
-    extendedClasses.forEach(function(className) {
-      if (!acc.compositions[extendee]) {
-        acc.compositions[extendee] = {};
-      }
-      if (!acc.compositions[className]) {
-        acc.compositions[className] = {};
-      }
-      acc.compositions[extendee][className] = acc.compositions[className];
-    });
-    return acc;
-  }
-
-  return matches.reduce(extractCompositions, {
-    css: css,
-    compositions: {}
-  });
-
-};
-
-function splitter(match) {
-  return match.split(',').map(getClassName);
-}
-
-function getClassName(str) {
-  var trimmed = str.trim();
-  return trimmed[0] === '.' ? trimmed.substr(1) : trimmed;
-}
-
-},{"./composition":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/composition.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/css-key.js":[function(require,module,exports){
-'use strict';
-
-/**
- * CSS identifiers with whitespace are invalid
- * Hence this key will not cause a collision
- */
-
-module.exports = ' css ';
-
-},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/extract-exports.js":[function(require,module,exports){
-'use strict';
-
-var regex = require('./regex');
-var classRegex = regex.classRegex;
-var keyframesRegex = regex.keyframesRegex;
-
-module.exports = extractExports;
-
-function extractExports(css) {
-  return {
-    css: css,
-    keyframes: getExport(css, keyframesRegex),
-    classes: getExport(css, classRegex)
-  };
-}
-
-function getExport(css, regex) {
-  var prop = {};
-  var match;
-  while((match = regex.exec(css)) !== null) {
-    var name = match[2];
-    prop[name] = name;
-  }
-  return prop;
-}
-
-},{"./regex":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/regex.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/get-css.js":[function(require,module,exports){
-'use strict';
-
-var cssKey = require('./css-key');
-
-module.exports = function getCss(csjs) {
-  return csjs[cssKey];
-};
-
-},{"./css-key":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/css-key.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/hash-string.js":[function(require,module,exports){
-'use strict';
-
-/**
- * djb2 string hash implementation based on string-hash module:
- * https://github.com/darkskyapp/string-hash
- */
-
-module.exports = function hashStr(str) {
-  var hash = 5381;
-  var i = str.length;
-
-  while (i) {
-    hash = (hash * 33) ^ str.charCodeAt(--i)
-  }
-  return hash >>> 0;
-};
-
-},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/regex.js":[function(require,module,exports){
-'use strict';
-
-var findClasses = /(\.)(?!\d)([^\s\.,{\[>+~#:)]*)(?![^{]*})/.source;
-var findKeyframes = /(@\S*keyframes\s*)([^{\s]*)/.source;
-var ignoreComments = /(?!(?:[^*/]|\*[^/]|\/[^*])*\*+\/)/.source;
-
-var classRegex = new RegExp(findClasses + ignoreComments, 'g');
-var keyframesRegex = new RegExp(findKeyframes + ignoreComments, 'g');
-
-module.exports = {
-  classRegex: classRegex,
-  keyframesRegex: keyframesRegex,
-  ignoreComments: ignoreComments,
-};
-
-},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/replace-animations.js":[function(require,module,exports){
-var ignoreComments = require('./regex').ignoreComments;
-
-module.exports = replaceAnimations;
-
-function replaceAnimations(result) {
-  var animations = Object.keys(result.keyframes).reduce(function(acc, key) {
-    acc[result.keyframes[key]] = key;
-    return acc;
-  }, {});
-  var unscoped = Object.keys(animations);
-
-  if (unscoped.length) {
-    var regexStr = '((?:animation|animation-name)\\s*:[^};]*)('
-      + unscoped.join('|') + ')([;\\s])' + ignoreComments;
-    var regex = new RegExp(regexStr, 'g');
-
-    var replaced = result.css.replace(regex, function(match, preamble, name, ending) {
-      return preamble + animations[name] + ending;
-    });
-
-    return {
-      css: replaced,
-      keyframes: result.keyframes,
-      classes: result.classes
-    }
-  }
-
-  return result;
-}
-
-},{"./regex":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/regex.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/scoped-name.js":[function(require,module,exports){
-'use strict';
-
-var encode = require('./base62-encode');
-var hash = require('./hash-string');
-
-module.exports = function fileScoper(fileSrc) {
-  var suffix = encode(hash(fileSrc));
-
-  return function scopedName(name) {
-    return name + '_' + suffix;
-  }
-};
-
-},{"./base62-encode":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/base62-encode.js","./hash-string":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/hash-string.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/scopeify.js":[function(require,module,exports){
-'use strict';
-
-var fileScoper = require('./scoped-name');
-var replaceAnimations = require('./replace-animations');
-var regex = require('./regex');
-var classRegex = regex.classRegex;
-var keyframesRegex = regex.keyframesRegex;
-
-module.exports = scopify;
-
-function scopify(css, ignores) {
-  var makeScopedName = fileScoper(css);
-  var replacers = {
-    classes: classRegex,
-    keyframes: keyframesRegex
-  };
-
-  function scopeCss(result, key) {
-    var replacer = replacers[key];
-    function replaceFn(fullMatch, prefix, name) {
-      var scopedName = ignores[name] ? name : makeScopedName(name);
-      result[key][scopedName] = name;
-      return prefix + scopedName;
-    }
-    return {
-      css: result.css.replace(replacer, replaceFn),
-      keyframes: result.keyframes,
-      classes: result.classes
-    };
-  }
-
-  var result = Object.keys(replacers).reduce(scopeCss, {
-    css: css,
-    keyframes: {},
-    classes: {}
-  });
-
-  return replaceAnimations(result);
-}
-
-},{"./regex":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/regex.js","./replace-animations":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/replace-animations.js","./scoped-name":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/csjs/lib/scoped-name.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/hyperscript-attribute-to-property/index.js":[function(require,module,exports){
+},{"datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/index.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-list/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-list/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-list/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-list/src/node_modules/make-grid.js":[function(require,module,exports){
+arguments[4]["/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/make-grid.js"][0].apply(exports,arguments)
+},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-list/src/node_modules/message-maker.js":[function(require,module,exports){
+arguments[4]["/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/message-maker.js"][0].apply(exports,arguments)
+},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-list/src/node_modules/support-style-sheet.js":[function(require,module,exports){
+arguments[4]["/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/support-style-sheet.js"][0].apply(exports,arguments)
+},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/hyperscript-attribute-to-property/index.js":[function(require,module,exports){
 module.exports = attributeToProperty
 
 var transform = {
@@ -2939,7 +2939,7 @@ function account_action (opt, protocol) {
 
     return widget()
 }
-},{"datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-ui-button/src/index.js","datdot-ui-list":"/Users/bxbcats/prj/play/web/datdot-ui-list/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-actions/src/index.js":[function(require,module,exports){
+},{"datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/index.js","datdot-ui-list":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-list/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-actions/src/index.js":[function(require,module,exports){
 const style_sheet = require('support-style-sheet')
 const message_maker = require('message-maker')
 const make_grid = require('make-grid')
@@ -3290,7 +3290,7 @@ function i_actions({page = '*', flow = 'ui-actions', name, body = [], to = '#', 
     return widget()
 }
 
-},{"datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-ui-button/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-navigation/src/index.js":[function(require,module,exports){
+},{"datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-navigation/src/index.js":[function(require,module,exports){
 const style_sheet = require('support-style-sheet')
 const message_maker = require('message-maker')
 const make_grid = require('make-grid')
@@ -3370,7 +3370,7 @@ function navigation ({page = '*', flow = 'ui-navigation', to = '#', name = '.', 
 
     return widget()
 }
-},{"datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-ui-button/src/index.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/container.js":[function(require,module,exports){
+},{"datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/index.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/container.js":[function(require,module,exports){
 const bel = require('bel')
 const make_element = require('make-element')
 const style_sheet = require('support-style-sheet')
@@ -3486,7 +3486,7 @@ function custom_action (opt, protocol) {
 
     return widget()
 }
-},{"datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-ui-button/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/filter-action.js":[function(require,module,exports){
+},{"datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/filter-action.js":[function(require,module,exports){
 const style_sheet = require('support-style-sheet')
 const message_maker = require('message-maker')
 const make_grid = require('make-grid')
@@ -3555,7 +3555,7 @@ function filter_action (opt, protocol) {
 
     return widget()
 }
-},{"datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-ui-button/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/footer.js":[function(require,module,exports){
+},{"datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/footer.js":[function(require,module,exports){
 const message_maker = require('message-maker')
 const make_element = require('make-element')
 const style_sheet = require('support-style-sheet')
@@ -3672,9 +3672,9 @@ function make_element({name = '', classlist = null, role = undefined }) {
 
 
 },{}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js":[function(require,module,exports){
-arguments[4]["/Users/bxbcats/prj/play/web/datdot-ui-button/src/node_modules/make-grid.js"][0].apply(exports,arguments)
+arguments[4]["/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/make-grid.js"][0].apply(exports,arguments)
 },{}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js":[function(require,module,exports){
-arguments[4]["/Users/bxbcats/prj/play/web/datdot-ui-button/src/node_modules/message-maker.js"][0].apply(exports,arguments)
+arguments[4]["/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/node_modules/message-maker.js"][0].apply(exports,arguments)
 },{}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/search-action.js":[function(require,module,exports){
 const style_sheet = require('support-style-sheet')
 const message_maker = require('message-maker')
@@ -3744,7 +3744,7 @@ function search_action (opt, protocol) {
 
     return widget()
 }
-},{"datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-ui-button/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/sort-action.js":[function(require,module,exports){
+},{"datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/sort-action.js":[function(require,module,exports){
 const style_sheet = require('support-style-sheet')
 const message_maker = require('message-maker')
 const make_grid = require('make-grid')
@@ -3813,7 +3813,7 @@ function sort_action (opt, protocol) {
 
     return widget()
 }
-},{"datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-ui-button/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js":[function(require,module,exports){
+},{"datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js":[function(require,module,exports){
 module.exports = support_style_sheet
 function support_style_sheet (shadow, style) {
     return (() => {

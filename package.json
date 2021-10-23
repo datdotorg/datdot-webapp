@@ -40,6 +40,7 @@
     "datdot-ui-icon": "git+https://github.com/fionataeyang/datdot-ui-icon.git",
     "datdot-ui-input": "git+https://github.com/fionataeyang/datdot-ui-input.git",
     "datdot-ui-list": "git+https://github.com/fionataeyang/datdot-ui-list.git",
-    "electron": "^9.0.3"
+    "electron": "^9.0.3",
+    "leaflet": "^1.7.1"
   }
 }
