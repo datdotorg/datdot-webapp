@@ -366,7 +366,7 @@ function i_button (opt, protocol) {
             const old_text = shadow.querySelector('.text')
             // change content for button or switch or tab
             if (role.match(/button|switch|tab/)) {
-                
+                el.setAttribute('aria-label', text || title)
                 if (text) {
                     if (old_text) old_text.textContent = text
                 } else {
@@ -1200,6 +1200,7 @@ function i_list (opts = {}, protocol) {
                     bg_color_hover = 'var(--primary-bg-color-hover)', 
                     bg_color_focus = 'var(--primary-bg-color-focus)',
                     icon_size = 'var(--primary-icon-size)',
+                    icon_size_hover = 'var(--primary-icon-size_hover)',
                     icon_fill = 'var(--primary-icon-fill)',
                     icon_fill_hover = 'var(--primary-icon-fill-hover)',
                     avatar_width = 'var(--primary-avatar-width)', 
@@ -1237,7 +1238,7 @@ function i_list (opts = {}, protocol) {
                         size, size_hover, weight, 
                         color, color_hover, color_focus,
                         bg_color, bg_color_hover, bg_color_focus,
-                        icon_size, icon_fill, icon_fill_hover,
+                        icon_size, icon_size_hover, icon_fill, icon_fill_hover,
                         avatar_width, avatar_height, avatar_radius,
                         current_size, current_color, current_weight,
                         current_icon_size, current_icon_fill,
@@ -1276,7 +1277,8 @@ function i_list (opts = {}, protocol) {
                     bg_color_hover = 'var(--primary-bg-color-hover)', 
                     icon_fill = 'var(--primary-color)', 
                     icon_fill_hover = 'var(--primary-color-hover)', 
-                    icon_size = 'var(--primary-icon-size)', 
+                    icon_size = 'var(--primary-icon-size)',
+                    icon_size_hover = 'var(--primary-icon-size-hover)',
                     avatar_width = 'var(--primary-avatar-width)', 
                     avatar_height = 'var(--primary-avatar-height)', 
                     avatar_radius = 'var(--primary-avatar-radius)',
@@ -1321,7 +1323,7 @@ function i_list (opts = {}, protocol) {
                                 color, color_hover,
                                 bg_color, bg_color_hover,
                                 icon_fill, icon_fill_hover,
-                                icon_size,
+                                icon_size, icon_size_hover,
                                 avatar_width, avatar_height, avatar_radius,
                                 disabled_color, disabled_bg_color, disabled_icon_fill,
                                 padding
@@ -2603,7 +2605,6 @@ module.exports = wallet
 
 // accounts option
 const path = 'https://avatars.dicebear.com/api/bottts'
-
 let accounts_option = [
   {
       list_name: 'account1',
@@ -2619,6 +2620,7 @@ let accounts_option = [
         props: {
           icon_size: '24px',
           icon_size_hover: '24px',
+          // current_icon_size_hover: '24px',
           avatar_width: '24px',
           padding: '4px 8px'
         }
@@ -2759,7 +2761,6 @@ function wallet () {
     style_sheet(shadow, style)
     shadow.append(container, footer)
 
-
     if (accounts_option.length > 0) handle_account_init(accounts_option)
     
     return el
@@ -2871,7 +2872,6 @@ function account_action (opt, protocol) {
         style_sheet(shadow, style)
         set_attr({aria: 'hidden', prop: is_hidden})
         make_buttons({args: main_option, target: main_action})
-
         //  actions for current account (transfer, edit, delete)
         if (body.length > 0) make_buttons({args: current_account_option, target: current_account_action})
 

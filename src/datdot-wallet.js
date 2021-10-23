@@ -10,7 +10,6 @@ module.exports = wallet
 
 // accounts option
 const path = 'https://avatars.dicebear.com/api/bottts'
-
 let accounts_option = [
   {
       list_name: 'account1',
@@ -26,6 +25,7 @@ let accounts_option = [
         props: {
           icon_size: '24px',
           icon_size_hover: '24px',
+          // current_icon_size_hover: '24px',
           avatar_width: '24px',
           padding: '4px 8px'
         }
@@ -165,7 +165,6 @@ function wallet () {
     const footer = i_footer({name: 'wallet-footer', body: { nav: nav_option, accounts: accounts_option, status }, to: 'wallet-container'}, protocol('wallet-footer'))
     style_sheet(shadow, style)
     shadow.append(container, footer)
-
 
     if (accounts_option.length > 0) handle_account_init(accounts_option)
     
