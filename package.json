@@ -41,6 +41,7 @@
     "datdot-ui-input": "git+https://github.com/fionataeyang/datdot-ui-input.git",
     "datdot-ui-list": "git+https://github.com/fionataeyang/datdot-ui-list.git",
     "electron": "^9.0.3",
-    "leaflet": "^1.7.1"
+    "leaflet": "^1.7.1",
+    "leaflet.markercluster": "^1.5.3"
   }
 }
