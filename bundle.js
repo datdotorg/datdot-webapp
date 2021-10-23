@@ -726,10 +726,10 @@ function i_button (opt, protocol) {
         --bg-color: ${current_bg_color ? current_bg_color : 'var(--current-bg-color)'};
     }
     :host(i-button[aria-current="true"]) .icon,  :host(i-button[aria-current="true"]:hover) .icon {
-        --icon-size: ${current_icon_size || 'var(--current-icon-size)'};
+        --icon-size: ${current_icon_size ? current_icon_size : 'var(--current-icon-size)'};
     }
     :host(i-button[aria-current="true"]) g {
-        --icon-fill: ${current_icon_fill || 'var(--current-icon-fill)'};
+        --icon-fill: ${current_icon_fill ? current_icon_fill : 'var(--current-icon-fill)'};
     }
     :host(i-button[aria-current="true"]:focus) {
         --color: var(--color-focus);
@@ -737,13 +737,8 @@ function i_button (opt, protocol) {
     }
     :host(i-button[role="option"][aria-current="true"][aria-selected="true"]) .option > .icon, 
     :host(i-button[role="option"][aria-current="true"][aria-selected="true"]:hover) .option > .icon {
-        --icon-size: ${current_icon_size || 'var(--current-icon-size)'};
+        --icon-size: ${current_icon_size ? current_icon_size : 'var(--current-icon-size)'};
     }
-    /*
-    :host(i-button[role="option"][aria-current="true"][aria-selected="true"]) .option > .icon g,
-    :host(i-button[role="option"][aria-current="true"][aria-selected="true"]:hover) .option > .icon g {
-        --icon-fill: var(--current-icon-fill);
-    }*/
     :host(i-button[aria-checked="true"]), :host(i-button[aria-expanded="true"]),
     :host(i-button[aria-checked="true"]:hover), :host(i-button[aria-expanded="true"]:hover) {
         --size: ${current_size ? current_size : 'var(--current-size)'};
@@ -1279,6 +1274,7 @@ function i_list (opts = {}, protocol) {
                     icon_fill_hover = 'var(--primary-color-hover)', 
                     icon_size = 'var(--primary-icon-size)',
                     icon_size_hover = 'var(--primary-icon-size-hover)',
+                    current_icon_size = 'var(--current-icon-size)',
                     avatar_width = 'var(--primary-avatar-width)', 
                     avatar_height = 'var(--primary-avatar-height)', 
                     avatar_radius = 'var(--primary-avatar-radius)',
@@ -1324,6 +1320,7 @@ function i_list (opts = {}, protocol) {
                                 bg_color, bg_color_hover,
                                 icon_fill, icon_fill_hover,
                                 icon_size, icon_size_hover,
+                                current_icon_size,
                                 avatar_width, avatar_height, avatar_radius,
                                 disabled_color, disabled_bg_color, disabled_icon_fill,
                                 padding
@@ -2605,6 +2602,15 @@ module.exports = wallet
 
 // accounts option
 const path = 'https://avatars.dicebear.com/api/bottts'
+const accounts_list_theme = {
+  props: {
+    icon_size: '24px',
+    icon_size_hover: '24px',
+    current_icon_size: '24px',
+    avatar_width: '24px',
+    padding: '4px 8px'
+  }
+}
 let accounts_option = [
   {
       list_name: 'account1',
@@ -2616,15 +2622,7 @@ let accounts_option = [
       },
       current: true,
       controls: 'wallet-footer-account',
-      theme: {
-        props: {
-          icon_size: '24px',
-          icon_size_hover: '24px',
-          // current_icon_size_hover: '24px',
-          avatar_width: '24px',
-          padding: '4px 8px'
-        }
-      }
+      theme: accounts_list_theme
   },
   {
       list_name: 'account2',
@@ -2636,14 +2634,7 @@ let accounts_option = [
       },
       current: false,
       controls: 'wallet-footer-account',
-      theme: {
-        props: {
-          icon_size: '24px',
-          icon_size_hover: '24px',
-          avatar_width: '24px',
-          padding: '4px 8px'
-        }
-      }
+      theme: accounts_list_theme
   },
   {
       list_name: 'account3',
@@ -2655,14 +2646,7 @@ let accounts_option = [
       },
       current: false,
       controls: 'wallet-footer-account',
-      theme: {
-        props: {
-          icon_size: '24px',
-          icon_size_hover: '24px',
-          avatar_width: '24px',
-          padding: '4px 8px'
-        }
-      }
+      theme: accounts_list_theme
   },
   {
       list_name: 'account4',
@@ -2674,14 +2658,7 @@ let accounts_option = [
       },
       current: false,
       controls: 'wallet-footer-account',
-      theme: {
-        props: {
-          icon_size: '24px',
-          icon_size_hover: '24px',
-          avatar_width: '24px',
-          padding: '4px 8px'
-        }
-      }
+      theme: accounts_list_theme
   },
   {
       list_name: 'account5',
@@ -2693,14 +2670,7 @@ let accounts_option = [
       },
       current: false,
       controls: 'wallet-footer-account',
-      theme: {
-        props: {
-          icon_size: '24px',
-          icon_size_hover: '24px',
-          avatar_width: '24px',
-          padding: '4px 8px'
-        }
-      }
+      theme: accounts_list_theme
   },
   {
       list_name: 'account6',
@@ -2712,14 +2682,7 @@ let accounts_option = [
       },
       current: false,
       controls: 'wallet-footer-account',
-      theme: {
-        props: {
-          icon_size: '24px',
-          icon_size_hover: '24px',
-          avatar_width: '24px',
-          padding: '4px 8px'
-        }
-      }
+      theme: accounts_list_theme
   }
 ]
 

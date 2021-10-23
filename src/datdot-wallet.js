@@ -10,6 +10,15 @@ module.exports = wallet
 
 // accounts option
 const path = 'https://avatars.dicebear.com/api/bottts'
+const accounts_list_theme = {
+  props: {
+    icon_size: '24px',
+    icon_size_hover: '24px',
+    current_icon_size: '24px',
+    avatar_width: '24px',
+    padding: '4px 8px'
+  }
+}
 let accounts_option = [
   {
       list_name: 'account1',
@@ -21,15 +30,7 @@ let accounts_option = [
       },
       current: true,
       controls: 'wallet-footer-account',
-      theme: {
-        props: {
-          icon_size: '24px',
-          icon_size_hover: '24px',
-          // current_icon_size_hover: '24px',
-          avatar_width: '24px',
-          padding: '4px 8px'
-        }
-      }
+      theme: accounts_list_theme
   },
   {
       list_name: 'account2',
@@ -41,14 +42,7 @@ let accounts_option = [
       },
       current: false,
       controls: 'wallet-footer-account',
-      theme: {
-        props: {
-          icon_size: '24px',
-          icon_size_hover: '24px',
-          avatar_width: '24px',
-          padding: '4px 8px'
-        }
-      }
+      theme: accounts_list_theme
   },
   {
       list_name: 'account3',
@@ -60,14 +54,7 @@ let accounts_option = [
       },
       current: false,
       controls: 'wallet-footer-account',
-      theme: {
-        props: {
-          icon_size: '24px',
-          icon_size_hover: '24px',
-          avatar_width: '24px',
-          padding: '4px 8px'
-        }
-      }
+      theme: accounts_list_theme
   },
   {
       list_name: 'account4',
@@ -79,14 +66,7 @@ let accounts_option = [
       },
       current: false,
       controls: 'wallet-footer-account',
-      theme: {
-        props: {
-          icon_size: '24px',
-          icon_size_hover: '24px',
-          avatar_width: '24px',
-          padding: '4px 8px'
-        }
-      }
+      theme: accounts_list_theme
   },
   {
       list_name: 'account5',
@@ -98,14 +78,7 @@ let accounts_option = [
       },
       current: false,
       controls: 'wallet-footer-account',
-      theme: {
-        props: {
-          icon_size: '24px',
-          icon_size_hover: '24px',
-          avatar_width: '24px',
-          padding: '4px 8px'
-        }
-      }
+      theme: accounts_list_theme
   },
   {
       list_name: 'account6',
@@ -117,14 +90,7 @@ let accounts_option = [
       },
       current: false,
       controls: 'wallet-footer-account',
-      theme: {
-        props: {
-          icon_size: '24px',
-          icon_size_hover: '24px',
-          avatar_width: '24px',
-          padding: '4px 8px'
-        }
-      }
+      theme: accounts_list_theme
   }
 ]
 
