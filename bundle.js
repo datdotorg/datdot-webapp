@@ -20083,6 +20083,7 @@ const {i_button} = require('datdot-ui-button')
 const L = require('leaflet')
 const markerClusterGroup = require('Leaflet.markercluster')
 const leaflet_css = require('./node_modules/leaflet.css')
+const marker_cluster_css = require('./node_modules/marker-cluster.default.css.js')
 
 module.exports = bubble_map
 
@@ -20105,7 +20106,7 @@ function bubble_map (opt, protocol) {
         const addressPoints = [
             [-37.8210922667, 175.2209316333, "2"],
             [-37.8210819833, 175.2213903167, "3"],
-            [-37.8210881833, 175.2215004833, "3A"],
+            [-37.8210881833, 175.2215004833, "34"],
             [-37.8211946833, 175.2213655333, "1"],
             [-37.8209458667, 175.2214051333, "5"],
             [-37.8208292333, 175.2214374833, "7"],
@@ -20123,10 +20124,12 @@ function bubble_map (opt, protocol) {
             [-37.8080905833, 175.2275400667, "129"]
           ]
 
-        // L.map(HTML element or #id).setView([x,y], zoom)
+        // L.map(<HTMLElement> el or #id).setView([x,y], zoom)
         const map = L.map(mapid, {
+            center: [-37.82, 175.23],
+            zoom: 12,
             // default is true to support scrollWheelZoom
-            scrollWheelZoom: false,
+            scrollWheelZoom: true,
             // default is true to support double click on map to zoom in
             doubleClickZoom: false,
             // use Shift + mouse left to draw a rectangle area and go to see area
@@ -20134,9 +20137,10 @@ function bubble_map (opt, protocol) {
             keyboardPanOffset: 80,
             // default 1 to zoom map
             keyboardZoomOffset: 1,
+        })
+        // longitude(Y), latitude(X)
+        // .setView([-37.82, 175.23], 12)
 
-
-        }).setView([-37.82, 175.23], 12)
         // copyright for leaflet.js and OpenStreetMap must be shown on the page
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -20173,10 +20177,18 @@ function bubble_map (opt, protocol) {
             markers.addLayer(marker)
         })
 
-        
         map.addLayer(markers)
 
-        
+        map.on('click', onMapClick)
+
+        const popup = L.popup()
+        function onMapClick (e) {
+            popup
+            .setLatLng(e.latlng)
+            .setContent("You clicked the map at " + e.latlng.toString())
+            .openOn(map);
+        }
+     
 
         // dont put here, it is not worked.
         // map.invalidateSize();
@@ -20214,11 +20226,12 @@ function bubble_map (opt, protocol) {
         height: 100%;
     }
     ${leaflet_css}
+    ${marker_cluster_css}
     `
 
     return widget()
 }
-},{"../../../make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","../../../make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","../../../message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","../../../support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js","./node_modules/leaflet.css":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-bubble-map/src/node_modules/leaflet.css.js","Leaflet.markercluster":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/Leaflet.markercluster/dist/leaflet.markercluster-src.js","datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/index.js","leaflet":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/leaflet/dist/leaflet-src.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-bubble-map/src/node_modules/leaflet.css.js":[function(require,module,exports){
+},{"../../../make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","../../../make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","../../../message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","../../../support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js","./node_modules/leaflet.css":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-bubble-map/src/node_modules/leaflet.css.js","./node_modules/marker-cluster.default.css.js":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-bubble-map/src/node_modules/marker-cluster.default.css.js","Leaflet.markercluster":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/Leaflet.markercluster/dist/leaflet.markercluster-src.js","datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/datdot-ui-button/src/index.js","leaflet":"/Users/bxbcats/prj/play/web/datdot-wallet/node_modules/leaflet/dist/leaflet-src.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-bubble-map/src/node_modules/leaflet.css.js":[function(require,module,exports){
 module.exports = `
 /* required styles */
 .leaflet-pane,
@@ -20809,6 +20822,63 @@ svg.leaflet-image-layer.leaflet-interactive path {
 	left: 0;
 	margin-left: -12px;
 	border-right-color: #fff;
+}
+`
+},{}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-bubble-map/src/node_modules/marker-cluster.default.css.js":[function(require,module,exports){
+module.exports = `
+.marker-cluster-small {
+	background-color: rgba(181, 226, 140, 0.6);
+}
+.marker-cluster-small div {
+	background-color: rgba(110, 204, 57, 0.6);
+}
+.marker-cluster-medium {
+	background-color: rgba(241, 211, 87, 0.6);
+}
+.marker-cluster-medium div {
+	background-color: rgba(240, 194, 12, 0.6);
+}
+.marker-cluster-large {
+	background-color: rgba(253, 156, 115, 0.6);
+}
+.marker-cluster-large div {
+	background-color: rgba(241, 128, 23, 0.6);
+}
+/* IE 6-8 fallback colors */
+.leaflet-oldie .marker-cluster-small {
+	background-color: rgb(181, 226, 140);
+}
+.leaflet-oldie .marker-cluster-small div {
+	background-color: rgb(110, 204, 57);
+}
+.leaflet-oldie .marker-cluster-medium {
+	background-color: rgb(241, 211, 87);
+}
+.leaflet-oldie .marker-cluster-medium div {
+	background-color: rgb(240, 194, 12);
+}
+.leaflet-oldie .marker-cluster-large {
+	background-color: rgb(253, 156, 115);
+}
+.leaflet-oldie .marker-cluster-large div {
+	background-color: rgb(241, 128, 23);
+}
+.marker-cluster {
+	background-clip: padding-box;
+	border-radius: 20px;
+}
+.marker-cluster div {
+	width: 30px;
+	height: 30px;
+	margin-left: 5px;
+	margin-top: 5px;
+
+	text-align: center;
+	border-radius: 15px;
+	font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;
+}
+.marker-cluster span {
+    line-height: 30px;
 }
 `
 },{}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-navigation/src/index.js":[function(require,module,exports){
