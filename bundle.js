@@ -20129,7 +20129,7 @@ function bubble_map (opt, protocol) {
             center: [-37.82, 175.23],
             zoom: 12,
             // default is true to support scrollWheelZoom
-            scrollWheelZoom: true,
+            scrollWheelZoom: false,
             // default is true to support double click on map to zoom in
             doubleClickZoom: false,
             // use Shift + mouse left to draw a rectangle area and go to see area
@@ -20150,17 +20150,17 @@ function bubble_map (opt, protocol) {
         L.Icon.Default.imagePath = "src/assets"
         const LeafIcon = L.Icon.extend({
             options: {
-            shadowUrl: `${L.Icon.Default.imagePath}/maker-shadow.png`,
-               iconSize:     [36, 60],
-               shadowSize:   [50, 64],
+            shadowUrl: `${L.Icon.Default.imagePath}/flag-shadow.svg`,
+               iconSize:     [25, 32],
+               shadowSize:   [25, 32],
                iconAnchor:   [22, 94],
                shadowAnchor: [22, 94],
-               popupAnchor:  [-50, -90]
+               popupAnchor:  [-10, -100]
             }
         })
 
         const maker_icon = new LeafIcon({
-            iconUrl: `${L.Icon.Default.imagePath}/maker-icon.png`,
+            iconUrl: `${L.Icon.Default.imagePath}/flag.svg`,
         })
 
         // L.marker([51.5, -0.09], {icon: maker_icon }).addTo(map)
@@ -20179,15 +20179,15 @@ function bubble_map (opt, protocol) {
 
         map.addLayer(markers)
 
-        map.on('click', onMapClick)
-
-        const popup = L.popup()
-        function onMapClick (e) {
-            popup
-            .setLatLng(e.latlng)
-            .setContent("You clicked the map at " + e.latlng.toString())
-            .openOn(map);
-        }
+        // set popup on map
+        // map.on('click', onMapClick)
+        // const popup = L.popup()
+        // function onMapClick (e) {
+        //     popup
+        //     .setLatLng(e.latlng)
+        //     .setContent("You clicked the map at " + e.latlng.toString())
+        //     .openOn(map);
+        // }
      
 
         // dont put here, it is not worked.
@@ -20827,22 +20827,22 @@ svg.leaflet-image-layer.leaflet-interactive path {
 },{}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-bubble-map/src/node_modules/marker-cluster.default.css.js":[function(require,module,exports){
 module.exports = `
 .marker-cluster-small {
-	background-color: rgba(181, 226, 140, 0.6);
+	background-color: hsla(var(--color-black), 0.2);
 }
 .marker-cluster-small div {
-	background-color: rgba(110, 204, 57, 0.6);
+	background-color: hsl(var(--color-black), 0.69);
 }
 .marker-cluster-medium {
-	background-color: rgba(241, 211, 87, 0.6);
+	background-color: hsla(var(--color-black), 0.2);
 }
 .marker-cluster-medium div {
-	background-color: rgba(240, 194, 12, 0.6);
+	background-color: hsla(var(--color-black), 0.69);
 }
 .marker-cluster-large {
-	background-color: rgba(253, 156, 115, 0.6);
+	background-color: hsla(var(--color-black), 0.2);
 }
 .marker-cluster-large div {
-	background-color: rgba(241, 128, 23, 0.6);
+	background-color: hsla(var(--color-black), 0.69);
 }
 /* IE 6-8 fallback colors */
 .leaflet-oldie .marker-cluster-small {
@@ -20872,12 +20872,12 @@ module.exports = `
 	height: 30px;
 	margin-left: 5px;
 	margin-top: 5px;
-
 	text-align: center;
 	border-radius: 15px;
 	font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;
 }
 .marker-cluster span {
+	color: hsl(var(--color-white));
     line-height: 30px;
 }
 `
