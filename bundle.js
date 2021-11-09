@@ -34086,11 +34086,11 @@ const style_sheet = require('../../../support-style-sheet')
 const message_maker = require('../../../message-maker')
 const make_grid = require('../../../make-grid')
 const make_element = require('../../../make-element')
-const {i_button} = require('../../datdot-ui-button/src')
+const i_card = require('card')
 
 module.exports = plan_card
 function plan_card (opt, protocol) {
-    const {page = '*', flow = "ui-plan-card", name = ".", body = undefined, to = '#'} = opt
+    const {page = '*', flow = "ui-plan-card", name = ".", body = [], to = '#'} = opt
     const recipients = []
     const make = message_maker(`${name} / ${flow} / ${page}`)
 
@@ -34098,16 +34098,33 @@ function plan_card (opt, protocol) {
         const send = protocol(get)
         const el = make_element({name: 'div', classlist: 'plan-card'})
         const shadow = el.attachShadow({mode: 'closed'})
-        const card = make_element({name: 'div', classlist: 'card'})
-        card.textContent = 'plan card is worked!'
+        const list = make_element({name: 'div', classlist: 'list'})
+        const card = i_card({name: 'plan1', body: 'plan1', to: 'wallet-footer'}, card_protocol('plan1'))
         style_sheet(shadow, style)
-        shadow.append(card)
-
+        list.textContent = 'plan card is worked!'
+        list.append(card)
+        shadow.append(list)
         send(make({type: 'ready'}))
 
         return el
-        function get (msg) {
 
+        function card_protocol (name) {
+            return send => {
+                recipients[name] = send
+                return card_get
+            }
+        }
+
+        function card_get (msg) {
+            const {head, type, refs, meta, data } = msg
+            const from = head[0].split(' / ')[0]
+            const flow = head[0].split(' / ')[1]
+            const make = message_maker(`${from} / ${flow} / ${page}`)
+            if (type === 'ready') return send(make(msg))
+        }
+
+        function get (msg) {
+            const {head, type, refs, meta, data } = msg
         }
     }
 
@@ -34119,7 +34136,31 @@ function plan_card (opt, protocol) {
 
     return widget()
 }
-},{"../../../make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","../../../make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","../../../message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","../../../support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js","../../datdot-ui-button/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-button/src/index.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/container.js":[function(require,module,exports){
+},{"../../../make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","../../../make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","../../../message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","../../../support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js","card":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-plan-card/src/node_modules/card.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-plan-card/src/node_modules/card.js":[function(require,module,exports){
+const make_grid = require('../../../../make-grid')
+const message_maker = require('../../../../message-maker')
+const make_element = require('../../../../make-element')
+const {i_button} = require('../../../datdot-ui-button/src')
+
+module.exports = ui_card
+
+function ui_card (opt, protocol) {
+    const {flow = "ui-card", name = ".", body = undefined, to = '#'} = opt
+    const recipients = []
+    const make = message_maker(`${name} / ${flow}`)
+    const send = protocol(get)
+    const el = make_element({name: 'i-card', classlist: 'card'})
+    el.innerText = 'this is plan1'
+
+    send(make({type: 'ready'}))
+
+    function get (msg) {
+
+    }
+
+    return el
+}
+},{"../../../../make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","../../../../make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","../../../../message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","../../../datdot-ui-button/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-button/src/index.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/container.js":[function(require,module,exports){
 const style_sheet = require('support-style-sheet')
 const make_element = require('make-element')
 const make_grid = require('make-grid')
@@ -34139,11 +34180,11 @@ function i_container({page = '*', flow = 'ui-container', name, body = {}}, proto
         const shadow = el.attachShadow({mode: 'closed'})
         const map = bubble_map({name: 'counts-map'}, container_protocol('counts-map'))
         const chart = linechart()
-        const plan1 = plan_card({name: 'plan1', body: 'aaaa'}, container_protocol('plan1'))
+        const plan_list = plan_card({name: 'plan_list', body: 'aaaa'}, container_protocol('plan_list'))
         // !important style_sheet must be implemented before shadow 
         // For Safari and Firefox cannot implement shadow before style
         style_sheet(shadow, style)
-        shadow.append(plan1, chart, map)
+        shadow.append(plan_list, chart, map)
         return el
 
         function container_protocol (name) {
