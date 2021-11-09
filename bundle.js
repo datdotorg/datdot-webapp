@@ -34132,6 +34132,12 @@ function plan_card (opt, protocol) {
     :host(.plans-list) {
         display: grid;
     }
+    i-card {
+        width: 178px;
+    }
+    i-card svg {
+        width: 100%
+    }
     `
 
     return widget()
@@ -34151,14 +34157,18 @@ function i_card (opt, protocol) {
     const make = message_maker(`${name} / ${flow}`)
     const send = protocol(get)
     const el = make_element({name: 'i-card', classlist: 'card'})
-    el.innerText = 'this is plan1'
-
-    send(make({type: 'ready'}))
-
+    const header = make_element({name: 'div', classlist: 'card-header'})
+    const title = make_element({name: 'h3', classlist: 'title'})
+    const plan_avatar = i_icon({name: 'datdot', path: 'https://avatars.dicebear.com/api/identicon/'})
+    title.innerText = 'plan1'
+    header.append(plan_avatar, title)
+    el.append(header)
+    
     function get (msg) {
-
+        
     }
-
+    
+    send(make({type: 'ready'}))
     return el
 }
 },{"components/datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-button/src/index.js","components/datdot-ui-icon/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-icon/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/container.js":[function(require,module,exports){
