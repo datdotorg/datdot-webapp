@@ -34081,12 +34081,12 @@ function navigation ({page = '*', flow = 'ui-navigation', to = '#', name = '.', 
 
     return widget()
 }
-},{"../../datdot-ui-button/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-button/src/index.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-plan-card/src/index.js":[function(require,module,exports){
-const style_sheet = require('../../../support-style-sheet')
-const message_maker = require('../../../message-maker')
-const make_grid = require('../../../make-grid')
-const make_element = require('../../../make-element')
-const i_card = require('card')
+},{"../../datdot-ui-button/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-button/src/index.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-plans-list/src/index.js":[function(require,module,exports){
+const style_sheet = require('support-style-sheet')
+const message_maker = require('message-maker')
+const make_grid = require('make-grid')
+const make_element = require('make-element')
+const i_card = require('components/datdot-ui-plans-list/src/node_modules/card')
 
 module.exports = plan_card
 function plan_card (opt, protocol) {
@@ -34096,12 +34096,12 @@ function plan_card (opt, protocol) {
 
     function widget () {
         const send = protocol(get)
-        const el = make_element({name: 'div', classlist: 'plan-card'})
+        const el = make_element({name: 'div', classlist: 'plans-list'})
         const shadow = el.attachShadow({mode: 'closed'})
         const list = make_element({name: 'div', classlist: 'list'})
         const card = i_card({name: 'plan1', body: 'plan1', to: 'wallet-footer'}, card_protocol('plan1'))
         style_sheet(shadow, style)
-        list.textContent = 'plan card is worked!'
+        list.textContent = 'plan list is worked!'
         list.append(card)
         shadow.append(list)
         send(make({type: 'ready'}))
@@ -34129,22 +34129,22 @@ function plan_card (opt, protocol) {
     }
 
     const style = `
-    :host(.plan-card) {
+    :host(.plans-list) {
         display: grid;
     }
     `
 
     return widget()
 }
-},{"../../../make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","../../../make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","../../../message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","../../../support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js","card":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-plan-card/src/node_modules/card.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-plan-card/src/node_modules/card.js":[function(require,module,exports){
-const make_grid = require('../../../../make-grid')
-const message_maker = require('../../../../message-maker')
-const make_element = require('../../../../make-element')
-const {i_button} = require('../../../datdot-ui-button/src')
+},{"components/datdot-ui-plans-list/src/node_modules/card":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-plans-list/src/node_modules/card.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-plans-list/src/node_modules/card.js":[function(require,module,exports){
+const make_grid = require('make-grid')
+const message_maker = require('message-maker')
+const make_element = require('make-element')
+const {i_button} = require('components/datdot-ui-button')
 
-module.exports = ui_card
+module.exports = i_card
 
-function ui_card (opt, protocol) {
+function i_card (opt, protocol) {
     const {flow = "ui-card", name = ".", body = undefined, to = '#'} = opt
     const recipients = []
     const make = message_maker(`${name} / ${flow}`)
@@ -34160,14 +34160,14 @@ function ui_card (opt, protocol) {
 
     return el
 }
-},{"../../../../make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","../../../../make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","../../../../message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","../../../datdot-ui-button/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-button/src/index.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/container.js":[function(require,module,exports){
+},{"components/datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-button/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/container.js":[function(require,module,exports){
 const style_sheet = require('support-style-sheet')
 const make_element = require('make-element')
 const make_grid = require('make-grid')
 const message_maker = require('message-maker')
 const bubble_map = require('components/datdot-ui-bubble-map/src')
 const linechart = require('linechart')
-const plan_card = require('./components/datdot-ui-plan-card/src')
+const plans_list = require('components/datdot-ui-plans-list/src')
 
 module.exports = i_container
 function i_container({page = '*', flow = 'ui-container', name, body = {}}, protocol) {
@@ -34180,11 +34180,11 @@ function i_container({page = '*', flow = 'ui-container', name, body = {}}, proto
         const shadow = el.attachShadow({mode: 'closed'})
         const map = bubble_map({name: 'counts-map'}, container_protocol('counts-map'))
         const chart = linechart()
-        const plan_list = plan_card({name: 'plan_list', body: 'aaaa'}, container_protocol('plan_list'))
+        const planslist = plans_list({name: 'plans-list', body: 'aaaa'}, container_protocol('plans-list'))
         // !important style_sheet must be implemented before shadow 
         // For Safari and Firefox cannot implement shadow before style
         style_sheet(shadow, style)
-        shadow.append(plan_list, chart, map)
+        shadow.append(planslist, chart, map)
         return el
 
         function container_protocol (name) {
@@ -34213,7 +34213,7 @@ function i_container({page = '*', flow = 'ui-container', name, body = {}}, proto
     return widget()
 }
 
-},{"./components/datdot-ui-plan-card/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-plan-card/src/index.js","components/datdot-ui-bubble-map/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-bubble-map/src/index.js","linechart":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/linechart.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/custom-action.js":[function(require,module,exports){
+},{"components/datdot-ui-bubble-map/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-bubble-map/src/index.js","components/datdot-ui-plans-list/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-plans-list/src/index.js","linechart":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/linechart.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/custom-action.js":[function(require,module,exports){
 const style_sheet = require('support-style-sheet')
 const message_maker = require('message-maker')
 const make_grid = require('make-grid')
