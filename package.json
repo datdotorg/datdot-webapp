@@ -32,12 +32,15 @@
     "browserify": "^17.0.0"
   },
   "dependencies": {
+    "@kurkle/color": "^0.1.9",
     "bel": "^6.0.0",
     "chart.js": "^3.6.0",
+    "chartjs-adapter-luxon": "^1.1.0",
     "csjs-inject": "^1.0.1",
     "datdot-ui-logs": "github:fionataeyang/datdot-ui-logs",
     "electron": "^15.3.0",
     "leaflet": "^1.7.1",
-    "leaflet.markercluster": "^1.5.3"
+    "leaflet.markercluster": "^1.5.3",
+    "luxon": "^2.1.1"
   }
 }
