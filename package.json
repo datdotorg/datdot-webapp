@@ -29,11 +29,11 @@
   },
   "homepage": "https://github.com/serapath/datpinchain#readme",
   "devDependencies": {
-    "browserify": "^17.0.0",
-    "budo": "^2.1.5"
+    "browserify": "^17.0.0"
   },
   "dependencies": {
     "bel": "^6.0.0",
+    "chart.js": "^3.6.0",
     "csjs-inject": "^1.0.1",
     "datdot-ui-logs": "github:fionataeyang/datdot-ui-logs",
     "electron": "^15.3.0",
