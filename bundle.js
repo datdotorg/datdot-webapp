@@ -33554,6 +33554,7 @@ const message_maker = require('message-maker')
 const make_element = require('make-element')
 const {i_button} = require('components/datdot-ui-button')
 const i_icon = require('components/datdot-ui-icon/src')
+const make_avatar = require('make-avatar')
 
 module.exports = i_card
 
@@ -33570,9 +33571,8 @@ function i_card (opt, protocol) {
         const content = make_element({name: 'div', classlist: 'card-content'})
         const footer = make_element({name: 'div', classlist: 'card-footer'})
         const title = make_element({name: 'h3', classlist: 'title'})
-        const avatars = ['plan1', 'user1']
-        const plan_avatar = i_icon({name: 'plan1', path: 'https://avatars.dicebear.com/api/identicon/'})
-        const user_avatar = i_icon({name: 'user1', path: 'https://avatars.dicebear.com/api/avataaars/'})
+        const plan_avatar = i_icon({name: 'plan1', path: 'https://avatars.dicebear.com/api/identicon/', is_shadow: true, theme: {props: {size: '18px'}}})
+        const user_avatar = i_icon({name: 'user1', path: 'https://avatars.dicebear.com/api/gridy/', is_shadow: true, theme: {props: {size: '22px'}} })
         plan_avatar.classList.add('avatar-plan')
         user_avatar.classList.add('avatar-user')
         title.innerText = 'plan1'
@@ -33591,34 +33591,54 @@ function i_card (opt, protocol) {
     const style = `
     :host(i-card) {
         display: grid;
-        width: 178px;
+        grid-template-rows: 30px auto 50px;
+        width: 180px;
+        background-color: hsl(var(--color-white));
     }
     .card-header {
-        display: flex;
-        justify-content: space-between;
+        display: grid;
+        grid-template-columns: 24px 1fr 30px;
+        align-items: center;
+        background-color: hsl(var(--color-greyF2));
     }
-    .card-header .icon {
+    .card-header .title {
+        margin: 0;
+        text-align: center;
+    }
+    .card-header .avatar-plan {
         display: grid;
         align-items: center;
         justify-items: center;
         width: 24px;
         height: 24px;
+        padding: 4px;
         border-radius: 50px;
         background-color: hsl(var(--color-white));
     }
-    .card-header .avatar-plan svg {
-        width: 16px;
-        height: 16px;
-    }
-
-    .card-header .avatar-user svg {
-        width: 32px;
-        height: 32px;
+    .card-header .avatar-user {
+        display: grid;
+        justify-items: center;
+        align-items: center;
+        width: 30px;
+        height: 30px;
+        background-color: hsla(var(--color-white), 0.2);
     }
     `
     return widget()
 }
-},{"components/datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-button/src/index.js","components/datdot-ui-icon/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-icon/src/index.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-icon/src/index.js":[function(require,module,exports){
+},{"components/datdot-ui-button":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-button/src/index.js","components/datdot-ui-icon/src":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-icon/src/index.js","make-avatar":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-card/src/node_modules/make-avatar.js","make-element":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-element.js","make-grid":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/make-grid.js","message-maker":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/message-maker.js","support-style-sheet":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/support-style-sheet.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-card/src/node_modules/make-avatar.js":[function(require,module,exports){
+const i_icon = require('components/datdot-ui-icon');
+
+module.exports = make_avatar
+
+function make_avatar(opt) {
+    return i_icon({
+        ...opt, 
+        is_shadow: true, 
+        
+    })
+}
+},{"components/datdot-ui-icon":"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-icon/src/index.js"}],"/Users/bxbcats/prj/play/web/datdot-wallet/src/node_modules/components/datdot-ui-icon/src/index.js":[function(require,module,exports){
 const style_sheet = require('support-style-sheet')
 const make_element = require('make-element')
 const svg = require('svg')
@@ -34203,6 +34223,7 @@ function plan_card (opt, protocol) {
     const style = `
     :host(.plans-list) {
         display: grid;
+        background-color: hsl(var(--color-white));
     }
     `
 
