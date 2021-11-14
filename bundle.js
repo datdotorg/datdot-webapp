@@ -32142,7 +32142,7 @@ function wallet () {
   :host(.wrap) {
     display: grid;
     ${make_grid({
-      rows: 'repeat(auto-fit, minmax(0, auto))',
+      rows: 'repeat(auto-fit, minmax(0, 100%))',
       areas: ['container', 'nav']
     })}
     height: 100%;
