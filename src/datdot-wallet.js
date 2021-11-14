@@ -171,7 +171,7 @@ function wallet () {
   :host(.wrap) {
     display: grid;
     ${make_grid({
-      rows: '1fr auto',
+      rows: 'repeat(auto-fit, minmax(0, auto))',
       areas: ['container', 'nav']
     })}
     height: 100%;

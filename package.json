@@ -41,6 +41,7 @@
     "electron": "^15.3.0",
     "leaflet": "^1.7.1",
     "leaflet.markercluster": "^1.5.3",
-    "luxon": "^2.1.1"
+    "luxon": "^2.1.1",
+    "numeral": "^2.0.6"
   }
 }
