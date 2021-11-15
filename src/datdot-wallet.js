@@ -160,7 +160,7 @@ function wallet () {
       const from = head[0].split(' / ')[0]
       const to = head[1]
       if (type.match(/ready/)) return 
-      if (type.match(/click/)) return
+      if (type.match(/click/)) return 
       if (type.match(/switch-page/)) return recipients['wallet-container'](make({type: 'load-page', data}))
       if (type.match(/switch-account/)) return handle_change_account({from, data, args: accounts_option})
       if (type.match(/selected/)) return console.log(from, data)

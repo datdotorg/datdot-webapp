@@ -32131,7 +32131,7 @@ function wallet () {
       const from = head[0].split(' / ')[0]
       const to = head[1]
       if (type.match(/ready/)) return 
-      if (type.match(/click/)) return
+      if (type.match(/click/)) return 
       if (type.match(/switch-page/)) return recipients['wallet-container'](make({type: 'load-page', data}))
       if (type.match(/switch-account/)) return handle_change_account({from, data, args: accounts_option})
       if (type.match(/selected/)) return console.log(from, data)
@@ -34581,7 +34581,8 @@ function i_card (opt, protocol) {
     const recipients = []
     const make = message_maker(`${name} / ${flow}`)
     const {text = null, account = null, active = false, total = 0, feeds = 0, chunks = 0, size = 0, start = null, end = null, locations = []} = body
-    let isActive = active
+    let is_active = active
+    let is_current = false
 
     function widget () {
         const send = protocol(get)
@@ -34594,7 +34595,9 @@ function i_card (opt, protocol) {
         const title_text = make_element({name: 'span', classlist: 'text'})
         const plan_avatar = i_icon({name: text, path: 'https://avatars.dicebear.com/api/identicon/', is_shadow: true, theme: {props: {size: '16px'}}})
         const user_avatar = i_icon({name: account.name, path: 'https://avatars.dicebear.com/api/bottts/', is_shadow: true, theme: {props: {size: '22px'}} })
-        const status = make_element({name: 'span', classlist: `status${isActive ? ' on' : ' off'}`})
+        const status = make_element({name: 'span', classlist: `status${is_active ? ' on' : ' off'}`})
+        el.dataset.plan = name
+        el.dataset.account = account.name
         plan_avatar.classList.add('avatar-plan')
         user_avatar.classList.add('avatar-user')
         title_text.innerText = text
@@ -34612,7 +34615,7 @@ function i_card (opt, protocol) {
         return el
 
         function get_plan_info () {
-            send( make({type: 'click', data: body} ))
+            send( make({type: 'click', to, data: {selected: name, data: body}} ))
         }
 
         function make_content () {
@@ -34652,6 +34655,12 @@ function i_card (opt, protocol) {
             element.append(add_year, add_month_date, add_time)
         }
 
+        function handle_current_card ({current}) {
+            is_current = current
+            if (is_current) el.setAttribute('aria-current', current)
+            else el.removeAttribute('aria-current')
+        }
+
         function map_protocol (name) {
             return send => {
                 recipients[name] = send
@@ -34660,27 +34669,36 @@ function i_card (opt, protocol) {
         }
 
         function get (msg) {
-            
+            const {head, type, refs, meta, data} = msg
+            const from = head[0].split(' / ')[0]
+            const flow = head[0].split(' / ')[1]
+            if (type === 'current') return handle_current_card({current: data})
         }
     }
 
     const style = `
     :host(i-card) {
+        --bg-color: var(--color-white);
+        --border-color: var(--color-black);
         display: grid;
         grid-template-rows: 30px 1fr 50px;
         gap: 8px;
-        background-color: hsl(var(--color-white));
-        border: 1px solid hsl(var(--color-black));
+        background-color: hsl(var(--bg-color));
+        border: 1px solid hsl(var(--border-color));
+        transition: border 1s, background-color 1 linear;  
         cursor: pointer;
     }
     /* Card Header */
     .card-header {
+        --color: var(--color-black);
+        --bg-color: var(--color-greyF2);
         display: grid;
         grid-template-columns: 35px 1fr 30px;
         gap: 0;
         align-items: center;
-        background-color: hsl(var(--color-greyF2));
-        
+        color: hsl(var(--color));
+        background-color: hsl(var(--bg-color));
+        transition: color 1s, background-color 1 linear;        
     }
     .title {
         display: grid;
@@ -34731,9 +34749,11 @@ function i_card (opt, protocol) {
         text-align: center;
     }
     .card-content > * {
+        --color: var(--color-black);
         font-size: var(--size14);
+        color: hsl(var(--color));
+        transition: color 1 linear;  
     }
-    
     .price {
         font-size: var(--size18);
         font-weight: 600;
@@ -34752,7 +34772,10 @@ function i_card (opt, protocol) {
         grid-template-areas: "from location to";
     }
     .card-footer > * {
+        --color: var(--color-white);
         font-size: var(--size12);
+        color: hsl(var(--color));
+        transition: color 1s linear;  
     }
     .from {
         grid-area: from;
@@ -34774,6 +34797,21 @@ function i_card (opt, protocol) {
     }
     .location {
         grid-area: location;
+    }
+    /* current card */
+    :host([aria-current="true"]) {
+       --bg-color: var(--color-black);
+    }
+    :host([aria-current="true"]) .card-header {
+        --color: var(--color-white);
+        --bg-color: 0, 0%, 18%;
+    }
+    :host([aria-current="true"]) .card-content > * {
+        --color: var(--color-white);
+        
+    }
+    :host([aria-current="true"]) .card-footer > * {
+        --color: var(--color-white);
     }
     `
     return widget()
@@ -35403,6 +35441,22 @@ function plan_card (opt, protocol) {
             }, card_protocol(`plan${i}`))
         }
 
+        function current_card (msg) {
+            const {head, type, refs, meta, data } = msg
+            const from = head[0].split(' / ')[0]
+            const flow = head[0].split(' / ')[1]
+            const make = message_maker(`${from} / ${flow} / ${page}`)
+            const {childNodes} = list
+            childNodes.forEach( card => {
+                const is_current = card.dataset.plan === from
+                if (is_current && card.getAttribute('aria-current')) return recipients[from](make({type: 'current', data: !is_current}))
+                const name = is_current ? from : card.dataset.plan
+                const msg = {type: 'current', data: is_current}
+                recipients[name](make({type: 'current', data: is_current}))
+            })
+            send(make(msg))
+        }
+
         function card_protocol (name) {
             return send => {
                 recipients[name] = send
@@ -35416,7 +35470,7 @@ function plan_card (opt, protocol) {
             const flow = head[0].split(' / ')[1]
             const make = message_maker(`${from} / ${flow} / ${page}`)
             if (type === 'ready') return send(make(msg))
-            if (type === 'click') return send(make(msg))
+            if (type === 'click') return current_card(msg)
         }
 
         function get (msg) {
@@ -35478,16 +35532,21 @@ function i_container({page = '*', flow = 'ui-container', name, body = {}}, proto
         function container_protocol (name) {
             return send => {
                 recipients[name] = send
-                return get
+                return received_from_child
             }
         }
+
+        function received_from_child (msg) {
+            const {head, type, refs, meta, data} = msg
+            if (type === 'click') return send(make(msg))
+        }
+
         function get (msg) {
             const {head, type, refs, meta, data} = msg
             const from = head[0].split(' / ')[0]
             const to = head[1]
             send(make(msg))
             // console.log('from container.js', msg)
-            console.log(msg)
             if (type.match(/load-page/)) return console.log(data.page)
         }
     }
