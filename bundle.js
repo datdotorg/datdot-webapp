@@ -32098,7 +32098,7 @@ function wallet () {
     const make = message_maker('datdot-wallet')
     const el = make_element({name: 'main', classlist: 'wrap'})
     const shadow = el.attachShadow({mode: 'closed'})
-    const container = i_container({name: 'wallet-container'}, protocol('wallet-container'))
+    const container = i_container({page: 'plans', name: 'wallet-container'}, protocol('wallet-container'))
     const footer = i_footer({name: 'wallet-footer', body: { nav: nav_option, accounts: accounts_option, status }, to: 'wallet-container'}, protocol('wallet-footer'))
     style_sheet(shadow, style)
     shadow.append(container, footer)
@@ -32140,6 +32140,8 @@ function wallet () {
 
   let style = `
   :host(.wrap) {
+    max-width: 960px;
+    margin: 0 auto;
     display: grid;
     ${make_grid({
       rows: 'repeat(auto-fit, minmax(0, 100%))',
@@ -34578,7 +34580,9 @@ function i_card (opt, protocol) {
     const {page = '*', flow = 'ui-card', name = '.', body = null, to = '#', theme} = opt
     const recipients = []
     const make = message_maker(`${name} / ${flow}`)
-    const {text, account, active, total, feeds, chunks, size, start, end, locations} = body
+    const {text = null, account = null, active = false, total = 0, feeds = 0, chunks = 0, size = 0, start = null, end = null, locations = []} = body
+    let isActive = active
+
     function widget () {
         const send = protocol(get)
         const el = make_element({name: 'i-card', classlist: 'card'})
@@ -34587,11 +34591,14 @@ function i_card (opt, protocol) {
         const content = make_element({name: 'div', classlist: 'card-content'})
         const footer = make_element({name: 'div', classlist: 'card-footer'})
         const title = make_element({name: 'h3', classlist: 'title'})
+        const title_text = make_element({name: 'span', classlist: 'text'})
         const plan_avatar = i_icon({name: text, path: 'https://avatars.dicebear.com/api/identicon/', is_shadow: true, theme: {props: {size: '16px'}}})
         const user_avatar = i_icon({name: account.name, path: 'https://avatars.dicebear.com/api/bottts/', is_shadow: true, theme: {props: {size: '22px'}} })
+        const status = make_element({name: 'span', classlist: `status${isActive ? ' on' : ' off'}`})
         plan_avatar.classList.add('avatar-plan')
         user_avatar.classList.add('avatar-user')
-        title.innerText = text
+        title_text.innerText = text
+        title.append(status, title_text)
         user_avatar.setAttribute('data-address', account.address)
         user_avatar.setAttribute('aria-label', account.name)
         header.append(plan_avatar, title, user_avatar)
@@ -34601,7 +34608,12 @@ function i_card (opt, protocol) {
         make_footer()
         shadow.append(header, content, footer)
         send(make({type: 'ready'}))
+        el.onclick = () => get_plan_info()
         return el
+
+        function get_plan_info () {
+            send( make({type: 'click', data: body} ))
+        }
 
         function make_content () {
             const total_price = make_element({name: 'div', classlist: 'price'})
@@ -34659,6 +34671,7 @@ function i_card (opt, protocol) {
         gap: 8px;
         background-color: hsl(var(--color-white));
         border: 1px solid hsl(var(--color-black));
+        cursor: pointer;
     }
     /* Card Header */
     .card-header {
@@ -34670,13 +34683,30 @@ function i_card (opt, protocol) {
         
     }
     .title {
+        display: grid;
+        grid-auto-flow: column;
+        align-items: center;
+        gap: 4px;
         margin: 0;
         text-align: center;
+    }
+    .text {
         font-size: var(--size16);
         font-weight: 300;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+    .status {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+    }
+    .on {
+        background-color: hsl(var(--color-slimy-green));
+    }
+    .off {
+        background-color: hsl(var(--color-grey88));
     }
     .avatar-plan {
         display: grid;
@@ -35386,15 +35416,19 @@ function plan_card (opt, protocol) {
             const flow = head[0].split(' / ')[1]
             const make = message_maker(`${from} / ${flow} / ${page}`)
             if (type === 'ready') return send(make(msg))
+            if (type === 'click') return send(make(msg))
         }
 
         function get (msg) {
             const {head, type, refs, meta, data } = msg
+            
         }
     }
 
     const style = `
     :host(.plans-list) {
+        position: relative;
+        z-index: 1;
         display: grid;
         background-color: hsl(var(--color-white));
         padding: 10px 20px;
@@ -35424,7 +35458,6 @@ module.exports = i_container
 function i_container({page = '*', flow = 'ui-container', name, body = {}}, protocol) {
     const recipients = []
     const make = message_maker(`${name} / ${flow} / ${page}`)
-
     function widget () {
         const send = protocol(get)
         const el = make_element({name: 'i-container'})
@@ -35435,8 +35468,12 @@ function i_container({page = '*', flow = 'ui-container', name, body = {}}, proto
         // !important style_sheet must be implemented before shadow 
         // For Safari and Firefox cannot implement shadow before style
         style_sheet(shadow, style)
-        shadow.append(planslist, chart, map)
+        if (page === 'plans') render_plans([planslist, chart, map], shadow)
         return el
+
+        function render_plans (args, target) {
+            return args.forEach( item => target.append(item) )
+        }
 
         function container_protocol (name) {
             return send => {
@@ -35449,7 +35486,8 @@ function i_container({page = '*', flow = 'ui-container', name, body = {}}, proto
             const from = head[0].split(' / ')[0]
             const to = head[1]
             send(make(msg))
-            console.log('from container.js', msg)
+            // console.log('from container.js', msg)
+            console.log(msg)
             if (type.match(/load-page/)) return console.log(data.page)
         }
     }
@@ -35457,7 +35495,8 @@ function i_container({page = '*', flow = 'ui-container', name, body = {}}, proto
     const style = `
     :host(i-container) {
         display: grid;
-        grid-template-rows: repeat(auto-fit, minmax(250px, 1fr)); 
+        /* make auto responsive */
+        grid-template-rows: repeat(auto-fit, minmax(0, 1fr)); 
         height: 100%;
     }
     @media (max-width: 600px) {
@@ -35835,8 +35874,10 @@ function line_chart () {
   }
   
   const style = `
-  :host( .chart-section ) {
-    height: 100%
+  :host(.chart-section) {
+    height: 100%;
+    position: relative;
+    z-index: 3;
   }
   canvas {
     display: grid !important;

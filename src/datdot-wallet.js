@@ -127,7 +127,7 @@ function wallet () {
     const make = message_maker('datdot-wallet')
     const el = make_element({name: 'main', classlist: 'wrap'})
     const shadow = el.attachShadow({mode: 'closed'})
-    const container = i_container({name: 'wallet-container'}, protocol('wallet-container'))
+    const container = i_container({page: 'plans', name: 'wallet-container'}, protocol('wallet-container'))
     const footer = i_footer({name: 'wallet-footer', body: { nav: nav_option, accounts: accounts_option, status }, to: 'wallet-container'}, protocol('wallet-footer'))
     style_sheet(shadow, style)
     shadow.append(container, footer)
@@ -169,6 +169,8 @@ function wallet () {
 
   let style = `
   :host(.wrap) {
+    max-width: 960px;
+    margin: 0 auto;
     display: grid;
     ${make_grid({
       rows: 'repeat(auto-fit, minmax(0, 100%))',
