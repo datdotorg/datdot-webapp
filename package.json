@@ -37,7 +37,7 @@
     "chart.js": "^3.6.0",
     "chartjs-adapter-luxon": "^1.1.0",
     "csjs-inject": "^1.0.1",
-    "datdot-ui-logs": "github:fionataeyang/datdot-ui-logs",
+    "datdot-ui-logs": "github:datdotorg/datdot-ui-logs",
     "electron": "^15.3.0",
     "leaflet": "^1.7.1",
     "leaflet.markercluster": "^1.5.3",
